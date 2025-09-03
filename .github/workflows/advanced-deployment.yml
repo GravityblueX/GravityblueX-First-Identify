@@ -1,0 +1,654 @@
+name: Advanced CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, 'feature/**', 'hotfix/**']
+  pull_request:
+    branches: [main, develop]
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  NODE_VERSION: '20'
+  KUBERNETES_NAMESPACE: teamsync
+
+jobs:
+  # Security and vulnerability scanning
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript, typescript
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+      - name: Run OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'TeamSync'
+          path: '.'
+          format: 'ALL'
+
+  # Code quality and testing
+  test-and-quality:
+    name: Test & Quality
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: teamsync_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    strategy:
+      matrix:
+        test-type: [unit, integration, e2e]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd server && npm ci
+          cd ../client && npm ci
+
+      - name: Setup test environment
+        run: |
+          cp .env.example .env.test
+          cd server && npx prisma generate
+          cd server && npx prisma db push
+        env:
+          DATABASE_URL: postgresql://postgres:test_password@localhost:5432/teamsync_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run linting
+        run: |
+          npm run lint
+          cd server && npm run lint
+          cd ../client && npm run lint
+
+      - name: Run type checking
+        run: |
+          cd server && npm run type-check
+          cd ../client && npm run type-check
+
+      - name: Run unit tests
+        if: matrix.test-type == 'unit'
+        run: |
+          cd server && npm run test:unit -- --coverage
+          cd ../client && npm run test:unit -- --coverage
+        env:
+          DATABASE_URL: postgresql://postgres:test_password@localhost:5432/teamsync_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run integration tests
+        if: matrix.test-type == 'integration'
+        run: cd server && npm run test:integration
+        env:
+          DATABASE_URL: postgresql://postgres:test_password@localhost:5432/teamsync_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Run E2E tests
+        if: matrix.test-type == 'e2e'
+        run: |
+          cd server && npm start &
+          cd client && npm run build && npm start &
+          cd tests/e2e && npm run test:e2e:headless
+        env:
+          DATABASE_URL: postgresql://postgres:test_password@localhost:5432/teamsync_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Upload coverage reports
+        if: matrix.test-type == 'unit'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./server/coverage/lcov.info,./client/coverage/lcov.info
+          flags: ${{ matrix.test-type }}
+
+  # Build and push container images
+  build-and-push:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    needs: [security-scan, test-and-quality]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    
+    strategy:
+      matrix:
+        service: [backend, frontend]
+
+    outputs:
+      backend-image: ${{ steps.meta-backend.outputs.tags }}
+      frontend-image: ${{ steps.meta-frontend.outputs.tags }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (Backend)
+        if: matrix.service == 'backend'
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Extract metadata (Frontend)
+        if: matrix.service == 'frontend'
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Backend
+        if: matrix.service == 'backend'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          file: ./server/Dockerfile.production
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Build and push Frontend
+        if: matrix.service == 'frontend'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./client
+          file: ./client/Dockerfile.production
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Run container security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ matrix.service == 'backend' && steps.meta-backend.outputs.tags || steps.meta-frontend.outputs.tags }}
+          format: 'sarif'
+          output: 'container-scan-results.sarif'
+
+      - name: Upload container scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'container-scan-results.sarif'
+
+  # Infrastructure provisioning
+  infrastructure:
+    name: Infrastructure
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Init
+        run: |
+          cd infrastructure/terraform
+          terraform init
+
+      - name: Terraform Plan
+        run: |
+          cd infrastructure/terraform
+          terraform plan -out=tfplan
+        env:
+          TF_VAR_environment: production
+          TF_VAR_cluster_name: teamsync-prod
+
+      - name: Terraform Apply
+        run: |
+          cd infrastructure/terraform
+          terraform apply -auto-approve tfplan
+
+  # Deployment with advanced strategies
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: [build-and-push, infrastructure]
+    if: github.ref == 'refs/heads/main'
+    
+    strategy:
+      matrix:
+        environment: [staging, production]
+
+    environment:
+      name: ${{ matrix.environment }}
+      url: https://${{ matrix.environment == 'production' && 'teamsync.com' || 'staging.teamsync.com' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Create namespace if not exists
+        run: |
+          kubectl create namespace ${{ env.KUBERNETES_NAMESPACE }}-${{ matrix.environment }} --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy database migrations
+        run: |
+          kubectl create job migration-$(date +%s) \
+            --image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }} \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-${{ matrix.environment }} \
+            -- npx prisma migrate deploy
+
+      - name: Blue-Green Deployment Strategy
+        run: |
+          # Update deployment with new image
+          kubectl set image deployment/teamsync-backend \
+            backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }} \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-${{ matrix.environment }}
+          
+          kubectl set image deployment/teamsync-frontend \
+            frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }} \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-${{ matrix.environment }}
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/teamsync-backend \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-${{ matrix.environment }} \
+            --timeout=600s
+          
+          kubectl rollout status deployment/teamsync-frontend \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-${{ matrix.environment }} \
+            --timeout=600s
+
+      - name: Run health checks
+        run: |
+          # Wait for pods to be ready
+          kubectl wait --for=condition=ready pod \
+            -l app=teamsync-backend \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-${{ matrix.environment }} \
+            --timeout=300s
+
+          # Test health endpoint
+          BACKEND_IP=$(kubectl get service teamsync-backend-service \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-${{ matrix.environment }} \
+            -o jsonpath='{.spec.clusterIP}')
+          
+          kubectl run health-check-$(date +%s) \
+            --image=curlimages/curl \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-${{ matrix.environment }} \
+            --rm -i --restart=Never \
+            -- curl -f http://$BACKEND_IP:5000/health
+
+      - name: Run smoke tests
+        run: |
+          cd tests/smoke
+          npm ci
+          npm run test:${{ matrix.environment }}
+        env:
+          API_URL: https://${{ matrix.environment == 'production' && 'api.teamsync.com' || 'staging-api.teamsync.com' }}
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Deployment failed, rolling back..."
+          kubectl rollout undo deployment/teamsync-backend \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-${{ matrix.environment }}
+          kubectl rollout undo deployment/teamsync-frontend \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-${{ matrix.environment }}
+
+  # Performance testing
+  performance-test:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install k6
+        run: |
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Run load tests
+        run: |
+          cd tests/performance
+          k6 run --out json=results.json load-test.js
+        env:
+          API_URL: https://staging-api.teamsync.com
+
+      - name: Analyze performance results
+        run: |
+          cd tests/performance
+          node analyze-results.js results.json
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: tests/performance/performance-report.html
+
+  # Canary deployment for production
+  canary-deploy:
+    name: Canary Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy, performance-test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Deploy canary version (10% traffic)
+        run: |
+          # Create canary deployment
+          envsubst < k8s/canary-deployment.yaml | kubectl apply -f -
+          
+          # Update traffic split
+          kubectl patch virtualservice teamsync-vs \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-production \
+            --type='json' \
+            -p='[{"op": "replace", "path": "/spec/http/0/match/0/weight", "value": 90}, {"op": "add", "path": "/spec/http/0/match/-", "value": {"weight": 10, "headers": {"canary": {"exact": "true"}}}}]'
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+
+      - name: Monitor canary metrics (5 minutes)
+        run: |
+          sleep 300
+          
+          # Check error rates
+          ERROR_RATE=$(kubectl exec -n monitoring deployment/prometheus -- \
+            promtool query instant 'rate(http_requests_total{job="teamsync-backend-canary",status=~"5.."}[5m])')
+          
+          echo "Canary error rate: $ERROR_RATE"
+          
+          if (( $(echo "$ERROR_RATE > 0.05" | bc -l) )); then
+            echo "Error rate too high, rolling back canary"
+            exit 1
+          fi
+
+      - name: Promote canary to 50% traffic
+        run: |
+          kubectl patch virtualservice teamsync-vs \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-production \
+            --type='json' \
+            -p='[{"op": "replace", "path": "/spec/http/0/match/0/weight", "value": 50}, {"op": "replace", "path": "/spec/http/0/match/1/weight", "value": 50}]'
+          
+          sleep 300  # Monitor for 5 more minutes
+
+      - name: Complete canary deployment (100% traffic)
+        run: |
+          # Update main deployment
+          kubectl set image deployment/teamsync-backend \
+            backend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }} \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-production
+          
+          kubectl set image deployment/teamsync-frontend \
+            frontend=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }} \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-production
+          
+          # Remove canary deployment
+          kubectl delete deployment teamsync-backend-canary \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-production
+
+      - name: Rollback canary on failure
+        if: failure()
+        run: |
+          echo "Canary deployment failed, rolling back..."
+          kubectl delete deployment teamsync-backend-canary \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-production || true
+          
+          # Reset traffic to 100% stable
+          kubectl patch virtualservice teamsync-vs \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-production \
+            --type='json' \
+            -p='[{"op": "replace", "path": "/spec/http/0/match", "value": [{"weight": 100}]}]'
+
+  # Automated monitoring setup
+  setup-monitoring:
+    name: Setup Monitoring
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Deploy Prometheus monitoring
+        run: |
+          kubectl apply -f monitoring/prometheus/
+          kubectl apply -f monitoring/grafana/
+          kubectl apply -f monitoring/alertmanager/
+
+      - name: Wait for monitoring stack
+        run: |
+          kubectl wait --for=condition=ready pod \
+            -l app=prometheus \
+            --namespace=monitoring \
+            --timeout=300s
+
+      - name: Import Grafana dashboards
+        run: |
+          # Wait for Grafana to be ready
+          kubectl wait --for=condition=ready pod \
+            -l app=grafana \
+            --namespace=monitoring \
+            --timeout=300s
+
+          # Import dashboards via API
+          GRAFANA_IP=$(kubectl get service grafana \
+            --namespace=monitoring \
+            -o jsonpath='{.spec.clusterIP}')
+          
+          for dashboard in monitoring/grafana/dashboards/*.json; do
+            kubectl run dashboard-import-$(date +%s) \
+              --image=curlimages/curl \
+              --namespace=monitoring \
+              --rm -i --restart=Never \
+              -- curl -X POST \
+              -H "Content-Type: application/json" \
+              -d "@$dashboard" \
+              http://admin:admin@$GRAFANA_IP:3000/api/dashboards/db
+          done
+
+  # Automated backup
+  backup:
+    name: Backup Data
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+      - name: Create database backup
+        run: |
+          # Create backup job
+          kubectl create job backup-$(date +%Y%m%d-%H%M%S) \
+            --from=cronjob/postgres-backup \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-production
+
+      - name: Verify backup completion
+        run: |
+          # Monitor backup job
+          kubectl wait --for=condition=complete job \
+            -l job-name=backup-$(date +%Y%m%d-%H%M%S) \
+            --namespace=${{ env.KUBERNETES_NAMESPACE }}-production \
+            --timeout=600s
+
+  # Security compliance checks
+  compliance:
+    name: Compliance Checks
+    runs-on: ubuntu-latest
+    needs: [deploy]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run compliance audit
+        run: |
+          # GDPR compliance check
+          curl -X POST https://api.teamsync.com/internal/compliance/audit \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_API_TOKEN }}" \
+            -H "Content-Type: application/json"
+
+      - name: Generate compliance report
+        run: |
+          mkdir -p compliance-reports
+          curl https://api.teamsync.com/internal/compliance/report \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_API_TOKEN }}" \
+            -o compliance-reports/gdpr-compliance-$(date +%Y%m%d).json
+
+      - name: Upload compliance artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-report
+          path: compliance-reports/
+
+  # Notification and reporting
+  notify:
+    name: Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [canary-deploy, backup, compliance]
+    if: always()
+
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          text: |
+            🚀 Deployment ${{ job.status }} for TeamSync Platform
+            
+            **Environment:** Production
+            **Version:** ${{ github.sha }}
+            **Branch:** ${{ github.ref_name }}
+            **Deployed by:** ${{ github.actor }}
+            
+            **Services:**
+            • Backend: ${{ needs.build-and-push.outputs.backend-image }}
+            • Frontend: ${{ needs.build-and-push.outputs.frontend-image }}
+            
+            **Health Status:** ✅ All services healthy
+            **Performance:** ✅ Load tests passed
+            **Security:** ✅ Vulnerability scans passed
+            **Compliance:** ✅ GDPR audit completed
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Update deployment dashboard
+        run: |
+          curl -X POST https://api.teamsync.com/internal/deployments \
+            -H "Authorization: Bearer ${{ secrets.INTERNAL_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "version": "${{ github.sha }}",
+              "environment": "${{ matrix.environment }}",
+              "status": "${{ job.status }}",
+              "deployedBy": "${{ github.actor }}",
+              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+            }'

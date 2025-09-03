@@ -1,0 +1,273 @@
+# Canary deployment for backend service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: teamsync-backend-canary
+  namespace: teamsync-production
+  labels:
+    app: teamsync-backend
+    version: canary
+spec:
+  replicas: 1  # Start with single replica for canary
+  selector:
+    matchLabels:
+      app: teamsync-backend
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: teamsync-backend
+        version: canary
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: backend
+        image: ${REGISTRY}/${IMAGE_NAME}/backend:${IMAGE_TAG}
+        ports:
+        - containerPort: 5000
+        env:
+        - name: PORT
+          value: "5000"
+        - name: DEPLOYMENT_VERSION
+          value: "canary"
+        - name: CANARY_TRAFFIC_PERCENTAGE
+          value: "10"
+        envFrom:
+        - configMapRef:
+            name: teamsync-config
+        - secretRef:
+            name: teamsync-secrets
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health/startup
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 12
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+
+---
+# Canary service
+apiVersion: v1
+kind: Service
+metadata:
+  name: teamsync-backend-canary-service
+  namespace: teamsync-production
+  labels:
+    app: teamsync-backend
+    version: canary
+spec:
+  selector:
+    app: teamsync-backend
+    version: canary
+  ports:
+  - port: 5000
+    targetPort: 5000
+  type: ClusterIP
+
+---
+# Istio VirtualService for traffic splitting
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: teamsync-vs
+  namespace: teamsync-production
+spec:
+  hosts:
+  - api.teamsync.com
+  http:
+  - match:
+    - headers:
+        canary:
+          exact: "true"
+    route:
+    - destination:
+        host: teamsync-backend-canary-service
+        port:
+          number: 5000
+      weight: 100
+  - route:
+    - destination:
+        host: teamsync-backend-service
+        port:
+          number: 5000
+      weight: 90
+    - destination:
+        host: teamsync-backend-canary-service
+        port:
+          number: 5000
+      weight: 10
+
+---
+# DestinationRule for load balancing
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: teamsync-backend-destination
+  namespace: teamsync-production
+spec:
+  host: teamsync-backend-service
+  trafficPolicy:
+    loadBalancer:
+      simple: LEAST_CONN
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 100
+        maxRequestsPerConnection: 10
+    circuitBreaker:
+      consecutiveErrors: 3
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+  subsets:
+  - name: stable
+    labels:
+      version: stable
+  - name: canary
+    labels:
+      version: canary
+
+---
+# ServiceMonitor for canary metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: teamsync-backend-canary-monitor
+  namespace: teamsync-production
+  labels:
+    app: teamsync-backend
+    version: canary
+spec:
+  selector:
+    matchLabels:
+      app: teamsync-backend
+      version: canary
+  endpoints:
+  - port: "5000"
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
+
+---
+# PrometheusRule for canary alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: teamsync-canary-alerts
+  namespace: teamsync-production
+spec:
+  groups:
+  - name: canary.rules
+    rules:
+    - alert: CanaryHighErrorRate
+      expr: |
+        (
+          sum(rate(http_requests_total{job="teamsync-backend-canary",status=~"5.."}[5m])) /
+          sum(rate(http_requests_total{job="teamsync-backend-canary"}[5m]))
+        ) > 0.05
+      for: 2m
+      labels:
+        severity: critical
+        service: teamsync-backend
+        deployment: canary
+      annotations:
+        summary: "Canary deployment error rate too high"
+        description: "Canary version has error rate of {{ $value | humanizePercentage }} over the last 5 minutes"
+
+    - alert: CanaryHighLatency
+      expr: |
+        histogram_quantile(0.95, 
+          sum(rate(http_request_duration_seconds_bucket{job="teamsync-backend-canary"}[5m])) by (le)
+        ) > 2.0
+      for: 2m
+      labels:
+        severity: warning
+        service: teamsync-backend
+        deployment: canary
+      annotations:
+        summary: "Canary deployment latency too high"
+        description: "Canary version 95th percentile latency is {{ $value }}s"
+
+    - alert: CanaryTrafficAnomaly
+      expr: |
+        absent(sum(rate(http_requests_total{job="teamsync-backend-canary"}[5m])))
+      for: 1m
+      labels:
+        severity: warning
+        service: teamsync-backend
+        deployment: canary
+      annotations:
+        summary: "Canary deployment receiving no traffic"
+        description: "Canary version is not receiving any traffic"
+
+---
+# Flagger canary configuration for automated rollouts
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: teamsync-backend
+  namespace: teamsync-production
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: teamsync-backend
+  progressDeadlineSeconds: 60
+  service:
+    port: 5000
+    targetPort: 5000
+  analysis:
+    interval: 1m
+    threshold: 5
+    maxWeight: 50
+    stepWeight: 10
+    metrics:
+    - name: request-success-rate
+      thresholdRange:
+        min: 99
+      interval: 1m
+    - name: request-duration
+      thresholdRange:
+        max: 500
+      interval: 1m
+    webhooks:
+    - name: acceptance-test
+      type: pre-rollout
+      url: http://flagger-loadtester.test/
+      timeout: 30s
+      metadata:
+        type: bash
+        cmd: "curl -sd 'test' http://teamsync-backend-canary.teamsync-production:5000/health"
+    - name: load-test
+      url: http://flagger-loadtester.test/
+      timeout: 5s
+      metadata:
+        cmd: "hey -z 1m -q 10 -c 2 http://teamsync-backend-canary.teamsync-production:5000/api/projects"

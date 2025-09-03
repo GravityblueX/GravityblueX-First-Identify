@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  firstName String
+  lastName  String
+  avatar    String?
+  role      Role     @default(MEMBER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  ownedProjects    Project[]       @relation("ProjectOwner")
+  projectMembers   ProjectMember[]
+  tasks            Task[]          @relation("TaskAssignee")
+  createdTasks     Task[]          @relation("TaskCreator")
+  comments         Comment[]
+  notifications    Notification[]
+  messagesSent     Message[]       @relation("MessageSender")
+  chatMembers      ChatMember[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(PLANNING)
+  priority    Priority      @default(MEDIUM)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  owner       User            @relation("ProjectOwner", fields: [ownerId], references: [id])
+  ownerId     String
+  members     ProjectMember[]
+  tasks       Task[]
+  chats       Chat[]
+  files       File[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String    @id @default(cuid())
+  role      MemberRole @default(MEMBER)
+  joinedAt  DateTime  @default(now())
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  project   Project   @relation(fields: [projectId], references: [id])
+  projectId String
+
+  @@unique([userId, projectId])
+  @@map("project_members")
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  dueDate     DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  project     Project   @relation(fields: [projectId], references: [id])
+  projectId   String
+  assignee    User?     @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  assigneeId  String?
+  creator     User      @relation("TaskCreator", fields: [creatorId], references: [id])
+  creatorId   String
+  comments    Comment[]
+  files       File[]
+
+  @@map("tasks")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user      User   @relation(fields: [userId], references: [id])
+  userId    String
+  task      Task   @relation(fields: [taskId], references: [id])
+  taskId    String
+
+  @@map("comments")
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  name      String?
+  type      ChatType @default(PROJECT)
+  createdAt DateTime @default(now())
+
+  // Relations
+  project   Project?     @relation(fields: [projectId], references: [id])
+  projectId String?
+  members   ChatMember[]
+  messages  Message[]
+
+  @@map("chats")
+}
+
+model ChatMember {
+  id       String   @id @default(cuid())
+  joinedAt DateTime @default(now())
+
+  // Relations
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  chat     Chat   @relation(fields: [chatId], references: [id])
+  chatId   String
+
+  @@unique([userId, chatId])
+  @@map("chat_members")
+}
+
+model Message {
+  id        String      @id @default(cuid())
+  content   String
+  type      MessageType @default(TEXT)
+  createdAt DateTime    @default(now())
+
+  // Relations
+  sender    User   @relation("MessageSender", fields: [senderId], references: [id])
+  senderId  String
+  chat      Chat   @relation(fields: [chatId], references: [id])
+  chatId    String
+
+  @@map("messages")
+}
+
+model File {
+  id        String   @id @default(cuid())
+  name      String
+  size      Int
+  type      String
+  url       String
+  createdAt DateTime @default(now())
+
+  // Relations
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId String?
+  task      Task?    @relation(fields: [taskId], references: [id])
+  taskId    String?
+
+  @@map("files")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  title     String
+  message   String
+  type      NotificationType
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user      User   @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@map("notifications")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ChatType {
+  PROJECT
+  DIRECT
+  GROUP
+}
+
+enum MessageType {
+  TEXT
+  FILE
+  IMAGE
+  SYSTEM
+}
+
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_UPDATED
+  PROJECT_UPDATED
+  MESSAGE_RECEIVED
+  MENTION
+}

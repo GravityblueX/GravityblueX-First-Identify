@@ -1,0 +1,25 @@
+{
+  "name": "teamsync-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "description": "Enterprise project management and collaboration platform",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "db:push": "cd server && npm run db:push",
+    "db:seed": "cd server && npm run db:seed"
+  },
+  "keywords": ["full-stack", "react", "nodejs", "typescript", "project-management"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "turbo": "^2.0.4"
+  }
+}

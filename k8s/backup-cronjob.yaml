@@ -1,0 +1,713 @@
+# Database backup CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: teamsync
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM UTC
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: postgres-backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: postgres-backup
+            image: postgres:15-alpine
+            command:
+            - /bin/bash
+            - -c
+            - |
+              # Create timestamp for backup file
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              BACKUP_FILE="teamsync_backup_${TIMESTAMP}.sql"
+              
+              echo "🗄️ Starting database backup: $BACKUP_FILE"
+              
+              # Create database dump with verbose output
+              pg_dump $DATABASE_URL \
+                --no-owner \
+                --no-privileges \
+                --clean \
+                --if-exists \
+                --verbose \
+                --file="/tmp/$BACKUP_FILE"
+              
+              if [ $? -eq 0 ]; then
+                echo "✅ Database dump completed successfully"
+                
+                # Compress the backup
+                gzip "/tmp/$BACKUP_FILE"
+                COMPRESSED_FILE="/tmp/${BACKUP_FILE}.gz"
+                
+                # Calculate checksum
+                CHECKSUM=$(sha256sum "$COMPRESSED_FILE" | awk '{ print $1 }')
+                echo "📊 Backup checksum: $CHECKSUM"
+                
+                # Upload to S3 using AWS CLI
+                aws s3 cp "$COMPRESSED_FILE" "s3://$AWS_BACKUP_BUCKET/database/daily/$COMPRESSED_FILE" \
+                  --server-side-encryption AES256 \
+                  --metadata checksum=$CHECKSUM,timestamp=$TIMESTAMP
+                
+                if [ $? -eq 0 ]; then
+                  echo "☁️ Backup uploaded to S3 successfully"
+                  
+                  # Record backup in database
+                  psql $DATABASE_URL -c "
+                    INSERT INTO backups (id, type, status, timestamp, size, location, checksum, description)
+                    VALUES (
+                      'backup_${TIMESTAMP}',
+                      'database',
+                      'completed',
+                      NOW(),
+                      $(stat -c%s "$COMPRESSED_FILE"),
+                      's3://$AWS_BACKUP_BUCKET/database/daily/$COMPRESSED_FILE',
+                      '$CHECKSUM',
+                      'Automated daily database backup'
+                    );
+                  "
+                  
+                  echo "📝 Backup metadata recorded"
+                  
+                  # Cleanup old backups (keep last 30 days)
+                  aws s3 ls "s3://$AWS_BACKUP_BUCKET/database/daily/" | \
+                    awk '$1 <= "'$(date -d '30 days ago' '+%Y-%m-%d')'"' | \
+                    awk '{print $4}' | \
+                    while read file; do
+                      if [ ! -z "$file" ]; then
+                        aws s3 rm "s3://$AWS_BACKUP_BUCKET/database/daily/$file"
+                        echo "🗑️ Deleted old backup: $file"
+                      fi
+                    done
+                else
+                  echo "❌ Failed to upload backup to S3"
+                  exit 1
+                fi
+                
+                # Cleanup local files
+                rm -f "$COMPRESSED_FILE"
+              else
+                echo "❌ Database dump failed"
+                exit 1
+              fi
+            env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: teamsync-secrets
+                  key: DATABASE_URL
+            - name: AWS_BACKUP_BUCKET
+              value: "teamsync-backups-prod"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: secret-access-key
+            - name: AWS_DEFAULT_REGION
+              value: "us-west-2"
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "250m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+            volumeMounts:
+            - name: backup-temp
+              mountPath: /tmp
+          volumes:
+          - name: backup-temp
+            emptyDir:
+              sizeLimit: 2Gi
+
+---
+# File backup CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: files-backup
+  namespace: teamsync
+spec:
+  schedule: "0 3 * * *"  # Daily at 3 AM UTC
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: files-backup
+            image: alpine:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              apk add --no-cache aws-cli tar gzip
+              
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              BACKUP_FILE="files_backup_${TIMESTAMP}.tar.gz"
+              
+              echo "📁 Starting files backup: $BACKUP_FILE"
+              
+              # Create compressed archive of upload directory
+              cd /app/uploads
+              tar -czf "/tmp/$BACKUP_FILE" .
+              
+              if [ $? -eq 0 ]; then
+                echo "✅ Files archive created successfully"
+                
+                # Calculate checksum
+                CHECKSUM=$(sha256sum "/tmp/$BACKUP_FILE" | awk '{ print $1 }')
+                
+                # Upload to S3
+                aws s3 cp "/tmp/$BACKUP_FILE" "s3://$AWS_BACKUP_BUCKET/files/daily/$BACKUP_FILE" \
+                  --server-side-encryption AES256 \
+                  --metadata checksum=$CHECKSUM,timestamp=$TIMESTAMP
+                
+                if [ $? -eq 0 ]; then
+                  echo "☁️ Files backup uploaded successfully"
+                  rm -f "/tmp/$BACKUP_FILE"
+                else
+                  echo "❌ Failed to upload files backup"
+                  exit 1
+                fi
+              else
+                echo "❌ Files archive creation failed"
+                exit 1
+              fi
+            env:
+            - name: AWS_BACKUP_BUCKET
+              value: "teamsync-backups-prod"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: secret-access-key
+            - name: AWS_DEFAULT_REGION
+              value: "us-west-2"
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"
+            volumeMounts:
+            - name: upload-volume
+              mountPath: /app/uploads
+              readOnly: true
+            - name: backup-temp
+              mountPath: /tmp
+          volumes:
+          - name: upload-volume
+            persistentVolumeClaim:
+              claimName: teamsync-uploads-pvc
+          - name: backup-temp
+            emptyDir:
+              sizeLimit: 1Gi
+
+---
+# Configuration backup CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: config-backup
+  namespace: teamsync
+spec:
+  schedule: "0 4 * * 0"  # Weekly on Sunday at 4 AM UTC
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: backup-service-account
+          containers:
+          - name: config-backup
+            image: alpine/k8s:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              apk add --no-cache aws-cli jq
+              
+              TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+              CONFIG_DIR="/tmp/config_backup_${TIMESTAMP}"
+              
+              echo "⚙️ Starting configuration backup"
+              mkdir -p "$CONFIG_DIR"
+              
+              # Backup Kubernetes configurations
+              kubectl get configmaps -n teamsync -o yaml > "$CONFIG_DIR/configmaps.yaml"
+              kubectl get secrets -n teamsync -o yaml > "$CONFIG_DIR/secrets.yaml"
+              kubectl get deployments -n teamsync -o yaml > "$CONFIG_DIR/deployments.yaml"
+              kubectl get services -n teamsync -o yaml > "$CONFIG_DIR/services.yaml"
+              kubectl get ingress -n teamsync -o yaml > "$CONFIG_DIR/ingress.yaml"
+              kubectl get hpa -n teamsync -o yaml > "$CONFIG_DIR/hpa.yaml"
+              
+              # Create backup info
+              cat > "$CONFIG_DIR/backup-info.json" << EOF
+              {
+                "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+                "namespace": "teamsync",
+                "type": "configuration",
+                "kubernetes_version": "$(kubectl version --client -o json | jq -r .clientVersion.gitVersion)",
+                "cluster_info": {
+                  "nodes": $(kubectl get nodes -o json | jq '.items | length'),
+                  "pods": $(kubectl get pods -n teamsync -o json | jq '.items | length')
+                }
+              }
+              EOF
+              
+              # Create compressed archive
+              tar -czf "/tmp/config_backup_${TIMESTAMP}.tar.gz" -C "/tmp" "config_backup_${TIMESTAMP}"
+              
+              # Calculate checksum
+              CHECKSUM=$(sha256sum "/tmp/config_backup_${TIMESTAMP}.tar.gz" | awk '{ print $1 }')
+              
+              # Upload to S3
+              aws s3 cp "/tmp/config_backup_${TIMESTAMP}.tar.gz" \
+                "s3://$AWS_BACKUP_BUCKET/configuration/weekly/config_backup_${TIMESTAMP}.tar.gz" \
+                --server-side-encryption AES256 \
+                --metadata checksum=$CHECKSUM,timestamp=$TIMESTAMP
+              
+              if [ $? -eq 0 ]; then
+                echo "☁️ Configuration backup uploaded successfully"
+                rm -rf "$CONFIG_DIR" "/tmp/config_backup_${TIMESTAMP}.tar.gz"
+              else
+                echo "❌ Failed to upload configuration backup"
+                exit 1
+              fi
+            env:
+            - name: AWS_BACKUP_BUCKET
+              value: "teamsync-backups-prod"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: secret-access-key
+            - name: AWS_DEFAULT_REGION
+              value: "us-west-2"
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "100m"
+              limits:
+                memory: "256Mi"
+                cpu: "200m"
+
+---
+# Service Account for backup operations
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backup-service-account
+  namespace: teamsync
+
+---
+# ClusterRole for backup operations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: backup-operator
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets", "services", "pods"]
+  verbs: ["get", "list"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get", "list"]
+- apiGroups: ["autoscaling"]
+  resources: ["horizontalpodautoscalers"]
+  verbs: ["get", "list"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "create"]
+
+---
+# ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: backup-operator-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: backup-operator
+subjects:
+- kind: ServiceAccount
+  name: backup-service-account
+  namespace: teamsync
+
+---
+# Backup verification CronJob
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup-verification
+  namespace: teamsync
+spec:
+  schedule: "0 6 * * *"  # Daily at 6 AM UTC
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: backup-verification
+            image: teamsync/backup-verifier:latest
+            command:
+            - /bin/bash
+            - -c
+            - |
+              echo "🔍 Starting backup verification"
+              
+              # Get list of recent backups from S3
+              RECENT_BACKUPS=$(aws s3 ls "s3://$AWS_BACKUP_BUCKET/database/daily/" \
+                --recursive | tail -3 | awk '{print $4}')
+              
+              for backup in $RECENT_BACKUPS; do
+                echo "Verifying backup: $backup"
+                
+                # Download backup
+                aws s3 cp "s3://$AWS_BACKUP_BUCKET/$backup" "/tmp/verify_backup.sql.gz"
+                
+                # Verify checksum
+                STORED_CHECKSUM=$(aws s3api head-object \
+                  --bucket "$AWS_BACKUP_BUCKET" \
+                  --key "$backup" \
+                  --query 'Metadata.checksum' --output text)
+                
+                CALCULATED_CHECKSUM=$(sha256sum "/tmp/verify_backup.sql.gz" | awk '{print $1}')
+                
+                if [ "$STORED_CHECKSUM" = "$CALCULATED_CHECKSUM" ]; then
+                  echo "✅ Checksum verification passed for $backup"
+                  
+                  # Test restore to isolated database
+                  gunzip "/tmp/verify_backup.sql.gz"
+                  
+                  # Create test database
+                  createdb -h $TEST_DB_HOST -U $TEST_DB_USER "test_restore_$(date +%s)"
+                  TEST_DB_NAME="test_restore_$(date +%s)"
+                  
+                  # Attempt restore
+                  psql -h $TEST_DB_HOST -U $TEST_DB_USER -d $TEST_DB_NAME \
+                    -f "/tmp/verify_backup.sql" >/dev/null 2>&1
+                  
+                  if [ $? -eq 0 ]; then
+                    echo "✅ Restore test passed for $backup"
+                    
+                    # Verify data integrity
+                    USER_COUNT=$(psql -h $TEST_DB_HOST -U $TEST_DB_USER -d $TEST_DB_NAME \
+                      -t -c "SELECT COUNT(*) FROM users;" 2>/dev/null || echo "0")
+                    
+                    if [ "$USER_COUNT" -gt "0" ]; then
+                      echo "✅ Data integrity verified for $backup"
+                    else
+                      echo "⚠️ Warning: No user data found in restored backup"
+                    fi
+                  else
+                    echo "❌ Restore test failed for $backup"
+                  fi
+                  
+                  # Cleanup test database
+                  dropdb -h $TEST_DB_HOST -U $TEST_DB_USER $TEST_DB_NAME 2>/dev/null || true
+                else
+                  echo "❌ Checksum verification failed for $backup"
+                  echo "Expected: $STORED_CHECKSUM"
+                  echo "Calculated: $CALCULATED_CHECKSUM"
+                fi
+                
+                rm -f "/tmp/verify_backup.sql.gz" "/tmp/verify_backup.sql"
+              done
+              
+              echo "🏁 Backup verification completed"
+            env:
+            - name: AWS_BACKUP_BUCKET
+              value: "teamsync-backups-prod"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-backup-credentials
+                  key: secret-access-key
+            - name: AWS_DEFAULT_REGION
+              value: "us-west-2"
+            - name: TEST_DB_HOST
+              value: "postgres-test-service"
+            - name: TEST_DB_USER
+              value: "postgres"
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-test-credentials
+                  key: password
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "200m"
+              limits:
+                memory: "512Mi"
+                cpu: "400m"
+
+---
+# Disaster recovery restore job template
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: disaster-recovery-restore
+  namespace: teamsync
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: disaster-recovery
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: disaster-recovery
+        image: teamsync/disaster-recovery:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "🚨 DISASTER RECOVERY MODE ACTIVATED"
+          echo "Target restore time: $RESTORE_TARGET_TIME"
+          echo "Components to restore: $RESTORE_COMPONENTS"
+          
+          # Parse restore components
+          IFS=',' read -ra COMPONENTS <<< "$RESTORE_COMPONENTS"
+          
+          for component in "${COMPONENTS[@]}"; do
+            echo "🔄 Restoring component: $component"
+            
+            case $component in
+              "database")
+                echo "📊 Restoring database..."
+                
+                # Find best backup for target time
+                BACKUP_FILE=$(aws s3 ls "s3://$AWS_BACKUP_BUCKET/database/daily/" | \
+                  awk '$1 <= "'$(date -d "$RESTORE_TARGET_TIME" '+%Y-%m-%d')'"' | \
+                  tail -1 | awk '{print $4}')
+                
+                if [ -z "$BACKUP_FILE" ]; then
+                  echo "❌ No suitable database backup found"
+                  exit 1
+                fi
+                
+                echo "Using backup: $BACKUP_FILE"
+                
+                # Download and restore
+                aws s3 cp "s3://$AWS_BACKUP_BUCKET/database/daily/$BACKUP_FILE" "/tmp/restore.sql.gz"
+                gunzip "/tmp/restore.sql.gz"
+                
+                # Drop existing database (DANGER: Only in DR scenario)
+                dropdb -h $DATABASE_HOST -U $DATABASE_USER $DATABASE_NAME --if-exists
+                createdb -h $DATABASE_HOST -U $DATABASE_USER $DATABASE_NAME
+                
+                # Restore database
+                psql -h $DATABASE_HOST -U $DATABASE_USER -d $DATABASE_NAME -f "/tmp/restore.sql"
+                
+                if [ $? -eq 0 ]; then
+                  echo "✅ Database restored successfully"
+                else
+                  echo "❌ Database restore failed"
+                  exit 1
+                fi
+                ;;
+                
+              "files")
+                echo "📁 Restoring files..."
+                
+                # Find latest file backup
+                FILE_BACKUP=$(aws s3 ls "s3://$AWS_BACKUP_BUCKET/files/daily/" | \
+                  awk '$1 <= "'$(date -d "$RESTORE_TARGET_TIME" '+%Y-%m-%d')'"' | \
+                  tail -1 | awk '{print $4}')
+                
+                if [ -z "$FILE_BACKUP" ]; then
+                  echo "❌ No suitable file backup found"
+                  exit 1
+                fi
+                
+                # Download and restore
+                aws s3 cp "s3://$AWS_BACKUP_BUCKET/files/daily/$FILE_BACKUP" "/tmp/files.tar.gz"
+                
+                # Clear existing files and restore
+                rm -rf /app/uploads/*
+                tar -xzf "/tmp/files.tar.gz" -C /app/uploads/
+                
+                if [ $? -eq 0 ]; then
+                  echo "✅ Files restored successfully"
+                else
+                  echo "❌ Files restore failed"
+                  exit 1
+                fi
+                ;;
+                
+              "configuration")
+                echo "⚙️ Restoring configuration..."
+                
+                # Find latest config backup
+                CONFIG_BACKUP=$(aws s3 ls "s3://$AWS_BACKUP_BUCKET/configuration/weekly/" | \
+                  tail -1 | awk '{print $4}')
+                
+                if [ -z "$CONFIG_BACKUP" ]; then
+                  echo "❌ No configuration backup found"
+                  exit 1
+                fi
+                
+                # Download and extract
+                aws s3 cp "s3://$AWS_BACKUP_BUCKET/configuration/weekly/$CONFIG_BACKUP" "/tmp/config.tar.gz"
+                tar -xzf "/tmp/config.tar.gz" -C "/tmp/"
+                
+                echo "✅ Configuration restored successfully"
+                ;;
+                
+              *)
+                echo "❌ Unknown component: $component"
+                exit 1
+                ;;
+            esac
+          done
+          
+          echo "🎉 Disaster recovery completed successfully"
+          echo "⚠️ Please verify system functionality before resuming operations"
+        env:
+        - name: RESTORE_TARGET_TIME
+          value: "2024-01-01T00:00:00Z"  # Would be set dynamically
+        - name: RESTORE_COMPONENTS
+          value: "database,files,configuration"  # Would be set dynamically
+        - name: AWS_BACKUP_BUCKET
+          value: "teamsync-backups-prod"
+        - name: DATABASE_HOST
+          value: "postgres-service"
+        - name: DATABASE_USER
+          value: "postgres"
+        - name: DATABASE_NAME
+          value: "teamsync"
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: teamsync-secrets
+              key: DATABASE_PASSWORD
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-backup-credentials
+              key: access-key-id
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-backup-credentials
+              key: secret-access-key
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: upload-volume
+          mountPath: /app/uploads
+        - name: temp-volume
+          mountPath: /tmp
+      volumes:
+      - name: upload-volume
+        persistentVolumeClaim:
+          claimName: teamsync-uploads-pvc
+      - name: temp-volume
+        emptyDir:
+          sizeLimit: 5Gi
+
+---
+# Backup monitoring ServiceMonitor
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: backup-monitoring
+  namespace: teamsync
+spec:
+  selector:
+    matchLabels:
+      app: backup-monitor
+  endpoints:
+  - port: "8080"
+    path: /metrics
+    interval: 60s
+
+---
+# Backup alerts
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: backup-alerts
+  namespace: teamsync
+spec:
+  groups:
+  - name: backup.rules
+    rules:
+    - alert: BackupFailed
+      expr: increase(backup_jobs_failed_total[1h]) > 0
+      for: 0m
+      labels:
+        severity: critical
+        service: backup
+      annotations:
+        summary: "Backup job failed"
+        description: "Backup job has failed in the last hour"
+
+    - alert: BackupMissing
+      expr: time() - backup_last_success_timestamp > 86400  # 24 hours
+      for: 0m
+      labels:
+        severity: critical
+        service: backup
+      annotations:
+        summary: "No successful backup in 24 hours"
+        description: "No successful backup has been completed in the last 24 hours"
+
+    - alert: BackupStorageHigh
+      expr: backup_storage_used_bytes / backup_storage_total_bytes > 0.8
+      for: 5m
+      labels:
+        severity: warning
+        service: backup
+      annotations:
+        summary: "Backup storage usage high"
+        description: "Backup storage usage is above 80%"
