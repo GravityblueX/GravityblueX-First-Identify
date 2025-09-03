@@ -79,8 +79,8 @@ teamsync-platform/
 ### 安装和运行
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/teamsync-platform.git
-cd teamsync-platform
+git clone https://github.com/GravityblueX/GravityblueX-First-Identify.git
+cd GravityblueX-First-Identify
 
 # 安装依赖
 npm install
