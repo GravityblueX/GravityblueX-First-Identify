@@ -10,6 +10,10 @@ module.exports = {
   ],
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-unused-vars': 'warn',
+    'no-case-declarations': 'off',
+    'no-useless-escape': 'off',
+    'prefer-const': 'warn',
   },
 };

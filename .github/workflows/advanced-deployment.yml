@@ -1,12 +1,7 @@
 name: Advanced CI/CD Pipeline
 
 on:
-  push:
-    branches: [main, develop, 'feature/**', 'hotfix/**']
-  pull_request:
-    branches: [main, develop]
-  release:
-    types: [published]
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
