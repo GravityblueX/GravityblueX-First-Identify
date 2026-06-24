@@ -14,6 +14,8 @@
     "build": "turbo build",
     "test": "turbo test",
     "lint": "turbo lint",
+    "release:readiness": "node scripts/release-readiness.mjs",
+    "release:readiness:checked": "node scripts/release-readiness.mjs --run-checks",
     "db:push": "cd server && npm run db:push",
     "db:seed": "cd server && npm run db:seed"
   },

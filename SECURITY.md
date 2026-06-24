@@ -37,6 +37,7 @@ Before release-oriented changes, run:
 ```bash
 npm run build
 npm run test
+npm run release:readiness:checked
 ```
 
 The default TypeScript build is scoped to the app entrypoint and the modules it

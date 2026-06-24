@@ -55,9 +55,11 @@ teamsync-platform/
 ```bash
 npm run build
 npm run test
+npm run release:readiness:checked
 ```
 
 安全与维护边界见 [SECURITY.md](./SECURITY.md)。
+发布就绪证据会写入 `reports/release-readiness.md` 和 `reports/release-readiness.json`。
 
 ## 🎯 简历价值点
 
