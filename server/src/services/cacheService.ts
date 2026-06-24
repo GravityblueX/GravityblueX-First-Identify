@@ -6,10 +6,12 @@ interface CacheOptions {
   compress?: boolean; // Compress large values
 }
 
-class CacheService {
+class RedisCacheService {
   private redis: Redis;
   private readonly DEFAULT_TTL = 300; // 5 minutes
   private readonly TAG_PREFIX = 'tag:';
+  private hits = 0;
+  private misses = 0;
 
   constructor() {
     this.redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
@@ -18,7 +20,11 @@ class CacheService {
   async get<T>(key: string): Promise<T | null> {
     try {
       const cached = await this.redis.get(key);
-      if (!cached) return null;
+      if (!cached) {
+        this.misses += 1;
+        return null;
+      }
+      this.hits += 1;
 
       const data = JSON.parse(cached);
       
@@ -36,13 +42,14 @@ class CacheService {
     }
   }
 
-  async set(key: string, value: any, options: CacheOptions = {}): Promise<boolean> {
+  async set(key: string, value: any, options: CacheOptions | number = {}): Promise<boolean> {
     try {
-      const ttl = options.ttl || this.DEFAULT_TTL;
+      const normalizedOptions = typeof options === 'number' ? { ttl: options } : options;
+      const ttl = normalizedOptions.ttl || this.DEFAULT_TTL;
       let serialized = JSON.stringify(value);
 
       // Compress large values
-      if (options.compress || serialized.length > 1024) {
+      if (normalizedOptions.compress || serialized.length > 1024) {
         const zlib = await import('zlib');
         const compressed = zlib.deflateSync(serialized);
         serialized = JSON.stringify({
@@ -54,9 +61,9 @@ class CacheService {
       await this.redis.setex(key, ttl, serialized);
 
       // Add cache tags for group invalidation
-      if (options.tags && options.tags.length > 0) {
+      if (normalizedOptions.tags && normalizedOptions.tags.length > 0) {
         await Promise.all(
-          options.tags.map(tag =>
+          normalizedOptions.tags.map(tag =>
             this.redis.sadd(`${this.TAG_PREFIX}${tag}`, key)
           )
         );
@@ -245,6 +252,11 @@ class CacheService {
     }
   }
 
+  async getCacheHitRate() {
+    const total = this.hits + this.misses;
+    return total === 0 ? 0 : Math.round((this.hits / total) * 100);
+  }
+
   // Cache cleanup
   async cleanup() {
     try {
@@ -268,7 +280,8 @@ class CacheService {
 }
 
 // Singleton instance
-export const cacheService = new CacheService();
+export const cacheService = new RedisCacheService();
+export const CacheService = cacheService;
 
 // Cache middleware for Express
 export const cacheMiddleware = (options: CacheOptions & { keyGenerator?: (req: any) => string } = {}) => {

@@ -88,10 +88,14 @@ router.get('/project/:projectId', async (req: AuthRequest, res) => {
         data: {
           name: `${project.name} Chat`,
           type: 'PROJECT',
-          projectId,
+          project: {
+            connect: { id: projectId }
+          },
           members: {
             create: projectMembers.map(member => ({
-              userId: member.userId
+              user: {
+                connect: { id: member.userId }
+              }
             }))
           }
         },

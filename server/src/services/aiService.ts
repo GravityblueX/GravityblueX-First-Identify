@@ -305,7 +305,7 @@ export class AIService {
       }, {} as Record<number, number>);
 
       const mostProductiveDay = Object.entries(tasksByDayOfWeek)
-        .sort(([,a], [,b]) => b - a)[0];
+        .sort(([, a], [, b]) => Number(b) - Number(a))[0];
 
       if (mostProductiveDay) {
         const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];

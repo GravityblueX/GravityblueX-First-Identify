@@ -57,7 +57,7 @@ router.get('/dashboard/:projectId', async (req: AuthRequest, res) => {
       }),
       
       // Progress over time
-      prisma.$queryRaw`
+      prisma.$queryRaw<any[]>`
         SELECT 
           DATE(created_at) as date,
           status,
@@ -125,14 +125,19 @@ router.get('/dashboard/:projectId', async (req: AuthRequest, res) => {
       })
     );
 
+    const totalTaskCount = Object.values(tasksByStatus).reduce<number>(
+      (sum, count) => sum + Number(count),
+      0
+    );
+
     const analytics = {
       overview: {
-        totalTasks: Object.values(tasksByStatus).reduce((sum, count) => sum + count, 0),
+        totalTasks: totalTaskCount,
         completedTasks: tasksByStatus.DONE || 0,
         inProgressTasks: tasksByStatus.IN_PROGRESS || 0,
         pendingTasks: tasksByStatus.TODO || 0,
         completionRate: tasksByStatus.DONE 
-          ? Math.round((tasksByStatus.DONE / Object.values(tasksByStatus).reduce((sum, count) => sum + count, 0)) * 100)
+          ? Math.round((tasksByStatus.DONE / Math.max(totalTaskCount, 1)) * 100)
           : 0
       },
       tasksByStatus,
@@ -163,7 +168,7 @@ router.get('/team-performance', async (req: AuthRequest, res) => {
 
     const projectIds = userProjects.map(p => p.projectId);
 
-    const teamPerformance = await prisma.$queryRaw`
+    const teamPerformance = await prisma.$queryRaw<any[]>`
       SELECT 
         u.id,
         u.first_name,
@@ -212,7 +217,7 @@ router.get('/project-insights/:projectId', async (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    const insights = await prisma.$queryRaw`
+    const insights = await prisma.$queryRaw<any[]>`
       SELECT 
         'velocity' as metric,
         COUNT(CASE WHEN status = 'DONE' AND updated_at >= NOW() - INTERVAL '7 days' THEN 1 END) as current_week,

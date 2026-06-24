@@ -5,6 +5,8 @@ import { join } from 'path';
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
 import { AdvancedAnalyticsService } from './advancedAnalyticsService';
+import { CacheService } from '../services/cacheService';
+import { ObservabilityService } from '../services/observabilityService';
 
 const prisma = new PrismaClient();
 
@@ -509,7 +511,9 @@ export class ReportingEngine {
     const cacheKey = `dashboard:${dashboardId}:${userId}`;
     
     // Check for cached dashboard data
-    let dashboardData = await CacheService.get(cacheKey);
+    let dashboardData = await CacheService.get<{
+      widgets: Array<{ id: string; title: string; type: string; data: any; refreshRate: number }>;
+    }>(cacheKey);
     
     if (!dashboardData) {
       dashboardData = await this.buildDashboardData(dashboardId, userId, filters);

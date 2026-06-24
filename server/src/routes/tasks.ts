@@ -208,9 +208,23 @@ router.post('/', async (req: AuthRequest, res) => {
 
     const task = await prisma.task.create({
       data: {
-        ...data,
+        title: data.title,
+        description: data.description,
+        priority: data.priority,
         dueDate: data.dueDate ? new Date(data.dueDate) : null,
-        creatorId: req.user!.id,
+        project: {
+          connect: { id: data.projectId }
+        },
+        creator: {
+          connect: { id: req.user!.id }
+        },
+        ...(data.assigneeId
+          ? {
+              assignee: {
+                connect: { id: data.assigneeId }
+              }
+            }
+          : {})
       },
       include: {
         assignee: {

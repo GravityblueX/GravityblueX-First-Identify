@@ -39,7 +39,7 @@ export class SlackIntegration {
         completed: `✅ Task completed: *${task.title}* - Great work!`
       };
 
-      const blocks = [
+      const blocks: any[] = [
         {
           type: 'section',
           text: {
@@ -127,7 +127,7 @@ export class SlackIntegration {
         ? Math.round((completedTasks / project._count.tasks) * 100) 
         : 0;
 
-      const blocks = [
+      const blocks: any[] = [
         {
           type: 'header',
           text: {

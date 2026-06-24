@@ -128,7 +128,7 @@ export function setupSocketIO(io: Server) {
     socket.on('task-updated', async (data: {
       taskId: string;
       projectId: string;
-      changes: Partial<Task>;
+      changes: Record<string, any>;
     }) => {
       try {
         const task = await prisma.task.findFirst({

@@ -1,4 +1,4 @@
-import * as tf from '@tensorflow/tfjs-node';
+import * as tf from '@tensorflow/tfjs';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -20,7 +20,7 @@ interface TrainingData {
 }
 
 export class TaskPredictionModel {
-  private model: tf.Sequential | null = null;
+  private model: tf.LayersModel | null = null;
   private isTraining = false;
 
   constructor() {

@@ -81,7 +81,7 @@ export class PerformanceOptimizer {
         const cached = await CacheService.get(cacheKey);
         if (cached) {
           await this.recordQueryPerformance(queryName, Date.now() - startTime, true, 'cache_hit');
-          return cached;
+          return cached as T;
         }
       }
 
@@ -540,6 +540,7 @@ export class PerformanceOptimizer {
     const avgResponseTime = recentRequests.length > 0
       ? recentRequests.reduce((a, b) => a + b, 0) / recentRequests.length
       : 0;
+    const queryAnalysis = await this.analyzeQueryPerformance();
 
     // Generate alerts
     const alerts: any[] = [];
@@ -586,7 +587,7 @@ export class PerformanceOptimizer {
       },
       database: {
         activeConnections: 10, // Would be fetched from actual DB metrics
-        slowQueries: slowQueries.length,
+        slowQueries: queryAnalysis.slowQueries.length,
         avgQueryTime: this.getAverageQueryTime()
       },
       alerts

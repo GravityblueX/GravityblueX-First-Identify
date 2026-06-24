@@ -153,13 +153,19 @@ router.post('/', async (req: AuthRequest, res) => {
 
     const project = await prisma.project.create({
       data: {
-        ...data,
+        name: data.name,
+        description: data.description,
+        priority: data.priority,
         startDate: data.startDate ? new Date(data.startDate) : null,
         endDate: data.endDate ? new Date(data.endDate) : null,
-        ownerId: req.user!.id,
+        owner: {
+          connect: { id: req.user!.id }
+        },
         members: {
           create: {
-            userId: req.user!.id,
+            user: {
+              connect: { id: req.user!.id }
+            },
             role: 'OWNER'
           }
         }

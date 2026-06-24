@@ -11,6 +11,7 @@ import projectRoutes from './routes/projects';
 import taskRoutes from './routes/tasks';
 import userRoutes from './routes/users';
 import chatRoutes from './routes/chats';
+import analyticsRoutes from './routes/analytics';
 import { authenticateToken } from './middleware/auth';
 import { setupSocketIO } from './socket/socketHandler';
 import { errorHandler } from './middleware/errorHandler';
@@ -47,6 +48,7 @@ app.use('/api/users', authenticateToken, userRoutes);
 app.use('/api/projects', authenticateToken, projectRoutes);
 app.use('/api/tasks', authenticateToken, taskRoutes);
 app.use('/api/chats', authenticateToken, chatRoutes);
+app.use('/api/analytics', authenticateToken, analyticsRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { motion } from 'framer-motion';
 import { Plus, Calendar, User, MessageSquare } from 'lucide-react';
 import { taskApi } from '../../lib/api';
+import { cn } from '../../lib/utils';
 import { Task } from '../../types';
 import { Button } from '../ui/Button';
 import { TaskCard } from './TaskCard';
@@ -107,25 +108,33 @@ export function TaskBoard({ projectId }: TaskBoardProps) {
                             draggableId={task.id}
                             index={index}
                           >
-                            {(provided, snapshot) => (
-                              <motion.div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className={cn(
-                                  'transform transition-transform',
-                                  snapshot.isDragging && 'rotate-3 scale-105'
-                                )}
-                              >
-                                <TaskCard
-                                  task={task}
-                                  onClick={() => setSelectedTask(task)}
-                                />
-                              </motion.div>
-                            )}
+                            {(provided, snapshot) => {
+                              const { style, ...draggableProps } = provided.draggableProps;
+
+                              return (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...draggableProps}
+                                  {...provided.dragHandleProps}
+                                  style={style as CSSProperties}
+                                  className={cn(
+                                    'transform transition-transform',
+                                    snapshot.isDragging && 'rotate-3 scale-105'
+                                  )}
+                                >
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                  >
+                                    <TaskCard
+                                      task={task}
+                                      onClick={() => setSelectedTask(task)}
+                                    />
+                                  </motion.div>
+                                </div>
+                              );
+                            }}
                           </Draggable>
                         ))}
                       </div>

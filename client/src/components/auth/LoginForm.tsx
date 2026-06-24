@@ -27,8 +27,19 @@ const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
-type LoginForm = z.infer<typeof loginSchema>;
-type RegisterForm = z.infer<typeof registerSchema>;
+type LoginForm = {
+  email: string;
+  password: string;
+};
+
+type RegisterForm = {
+  email: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  confirmPassword: string;
+};
 
 export function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -74,8 +85,13 @@ export function LoginForm() {
     setError(null);
     
     try {
-      const { confirmPassword, ...registerData } = data;
-      await register(registerData);
+      await register({
+        email: data.email,
+        username: data.username,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        password: data.password,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {

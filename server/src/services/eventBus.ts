@@ -1,5 +1,8 @@
 import Redis from 'ioredis';
 import { EventEmitter } from 'events';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 interface EventPayload {
   type: string;
