@@ -1,0 +1,36 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "Asia/Shanghai",
+  "schedule": ["before 9am on monday"],
+  "dependencyDashboard": true,
+  "automerge": false,
+  "rangeStrategy": "bump",
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "matchFileNames": ["client/**"],
+      "groupName": "client dependencies"
+    },
+    {
+      "matchFileNames": ["server/**"],
+      "groupName": "server dependencies"
+    },
+    {
+      "matchFileNames": ["shared/**"],
+      "groupName": "shared dependencies"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions"
+    },
+    {
+      "matchPackageNames": ["next", "react", "react-dom"],
+      "groupName": "frontend framework"
+    },
+    {
+      "matchPackageNames": ["prisma", "@prisma/client"],
+      "groupName": "prisma stack"
+    }
+  ]
+}

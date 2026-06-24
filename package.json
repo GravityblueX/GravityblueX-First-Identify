@@ -18,7 +18,7 @@
     "db:seed": "cd server && npm run db:seed"
   },
   "keywords": ["full-stack", "react", "nodejs", "typescript", "project-management"],
-  "author": "Your Name",
+  "author": "GravityblueX",
   "license": "MIT",
   "devDependencies": {
     "turbo": "^2.0.4"
