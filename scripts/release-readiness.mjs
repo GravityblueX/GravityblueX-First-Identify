@@ -40,7 +40,7 @@ async function buildReport() {
   const rootPackage = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
   const gates = [];
 
-  for (const file of ['README.md', 'LICENSE', 'SECURITY.md', 'renovate.json', 'package-lock.json', 'turbo.json', 'scripts/runtime-boundary.mjs']) {
+  for (const file of ['README.md', 'LICENSE', 'SECURITY.md', 'renovate.json', 'package-lock.json', 'turbo.json', 'scripts/api-surface.mjs', 'scripts/runtime-boundary.mjs']) {
     gates.push(gate(`required file ${file}`, existsSync(resolve(root, file)), file));
   }
 
@@ -50,6 +50,7 @@ async function buildReport() {
 
   gates.push(gate('build script present', rootPackage.scripts?.build === 'turbo build', rootPackage.scripts?.build || 'missing'));
   gates.push(gate('test script present', rootPackage.scripts?.test === 'turbo test', rootPackage.scripts?.test || 'missing'));
+  gates.push(gate('api surface script present', rootPackage.scripts?.['api:surface'] === 'node scripts/api-surface.mjs', rootPackage.scripts?.['api:surface'] || 'missing'));
   gates.push(gate('runtime boundary script present', rootPackage.scripts?.['runtime:boundary'] === 'node scripts/runtime-boundary.mjs', rootPackage.scripts?.['runtime:boundary'] || 'missing'));
   gates.push(gate('author metadata present', rootPackage.author === 'GravityblueX', rootPackage.author || 'missing'));
   gates.push(gate('license metadata present', rootPackage.license === 'MIT', rootPackage.license || 'missing'));
@@ -63,6 +64,7 @@ async function buildReport() {
   const commandResults = [];
   if (runChecks) {
     for (const [name, command, args] of [
+      ['api surface command', 'npm', ['run', 'api:surface']],
       ['runtime boundary command', 'npm', ['run', 'runtime:boundary']],
       ['build command', 'npm', ['run', 'build']],
       ['test command', 'npm', ['run', 'test']]

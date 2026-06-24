@@ -1,6 +1,6 @@
 # TeamSync Release Readiness
 
-Generated: 2026-06-24T02:44:46.463Z
+Generated: 2026-06-24T02:55:43.379Z
 Project: `teamsync-platform`
 Version: `1.0.0`
 Status: `OK`
@@ -16,24 +16,28 @@ Executed build/test: `true`
 | required file renovate.json | OK | renovate.json |
 | required file package-lock.json | OK | package-lock.json |
 | required file turbo.json | OK | turbo.json |
+| required file scripts/api-surface.mjs | OK | scripts/api-surface.mjs |
 | required file scripts/runtime-boundary.mjs | OK | scripts/runtime-boundary.mjs |
 | workspace package client | OK | client |
 | workspace package server | OK | server |
 | workspace package shared | OK | shared |
 | build script present | OK | turbo build |
 | test script present | OK | turbo test |
+| api surface script present | OK | node scripts/api-surface.mjs |
 | runtime boundary script present | OK | node scripts/runtime-boundary.mjs |
 | author metadata present | OK | GravityblueX |
 | license metadata present | OK | MIT |
 | security boundary documented | OK | SECURITY.md |
 | README maintenance boundary documented | OK | README.md |
-| git status readable | OK | dirty_count=1 |
+| git status readable | OK | dirty_count=6 |
+| api surface command | OK | npm run api:surface exit=0 |
 | runtime boundary command | OK | npm run runtime:boundary exit=0 |
 | build command | OK | npm run build exit=0 |
 | test command | OK | npm run test exit=0 |
 
 ## Command Results
 
+- api surface command: `npm run api:surface` exit `0`
 - runtime boundary command: `npm run runtime:boundary` exit `0`
 - build command: `npm run build` exit `0`
 - test command: `npm run test` exit `0`

@@ -1,0 +1,207 @@
+{
+  "reportType": "teamsync_api_surface",
+  "generatedAt": "2026-06-24T02:55:41.613Z",
+  "ok": true,
+  "summary": {
+    "routeCount": 27,
+    "publicCount": 4,
+    "protectedCount": 23,
+    "mountedRouters": 6
+  },
+  "gates": [
+    {
+      "name": "routes discovered",
+      "ok": true,
+      "detail": "27 routes"
+    },
+    {
+      "name": "health endpoint public",
+      "ok": true,
+      "detail": "/health"
+    },
+    {
+      "name": "auth endpoints public",
+      "ok": true,
+      "detail": "/api/auth/login"
+    },
+    {
+      "name": "project routes protected",
+      "ok": true,
+      "detail": "/api/projects/*"
+    },
+    {
+      "name": "task routes protected",
+      "ok": true,
+      "detail": "/api/tasks/*"
+    }
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/analytics/dashboard/:projectId",
+      "protected": true,
+      "source": "server/src/routes/analytics.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/project-insights/:projectId",
+      "protected": true,
+      "source": "server/src/routes/analytics.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/team-performance",
+      "protected": true,
+      "source": "server/src/routes/analytics.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "protected": false,
+      "source": "server/src/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "protected": false,
+      "source": "server/src/routes/auth.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "protected": false,
+      "source": "server/src/routes/auth.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/chats/:id/messages",
+      "protected": true,
+      "source": "server/src/routes/chats.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/chats/:id/messages",
+      "protected": true,
+      "source": "server/src/routes/chats.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/chats/project/:projectId",
+      "protected": true,
+      "source": "server/src/routes/chats.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects",
+      "protected": true,
+      "source": "server/src/routes/projects.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects",
+      "protected": true,
+      "source": "server/src/routes/projects.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/:id",
+      "protected": true,
+      "source": "server/src/routes/projects.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/:id",
+      "protected": true,
+      "source": "server/src/routes/projects.ts"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/:id",
+      "protected": true,
+      "source": "server/src/routes/projects.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks",
+      "protected": true,
+      "source": "server/src/routes/tasks.ts"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/tasks/:id",
+      "protected": true,
+      "source": "server/src/routes/tasks.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/:id",
+      "protected": true,
+      "source": "server/src/routes/tasks.ts"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/tasks/:id",
+      "protected": true,
+      "source": "server/src/routes/tasks.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/:id/comments",
+      "protected": true,
+      "source": "server/src/routes/tasks.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/project/:projectId",
+      "protected": true,
+      "source": "server/src/routes/tasks.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/me",
+      "protected": true,
+      "source": "server/src/routes/users.ts"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/users/me",
+      "protected": true,
+      "source": "server/src/routes/users.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/notifications",
+      "protected": true,
+      "source": "server/src/routes/users.ts"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/users/notifications/:id/read",
+      "protected": true,
+      "source": "server/src/routes/users.ts"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/users/notifications/read-all",
+      "protected": true,
+      "source": "server/src/routes/users.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/search",
+      "protected": true,
+      "source": "server/src/routes/users.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "protected": false,
+      "source": "server/src/index.ts"
+    }
+  ],
+  "referenceBasis": [
+    "OpenAPI-style API inventory",
+    "Express mounted route contract",
+    "Repository health gates should be backed by inspectable local artifacts"
+  ]
+}
