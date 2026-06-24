@@ -1,6 +1,6 @@
 # TeamSync OpenAPI Contract
 
-Generated: 2026-06-24T03:20:36.240Z
+Generated: 2026-06-24T03:35:20.631Z
 Status: `OK`
 Operations: `27`
 Protected: `23`

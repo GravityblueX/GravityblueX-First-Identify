@@ -16,6 +16,7 @@
     "lint": "turbo lint",
     "api:surface": "node scripts/api-surface.mjs",
     "api:openapi": "node scripts/openapi-spec.mjs",
+    "deps:sbom": "node scripts/dependency-sbom.mjs",
     "runtime:boundary": "node scripts/runtime-boundary.mjs",
     "release:readiness": "node scripts/release-readiness.mjs",
     "release:readiness:checked": "node scripts/release-readiness.mjs --run-checks",

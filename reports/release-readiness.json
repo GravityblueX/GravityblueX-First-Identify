@@ -1,6 +1,6 @@
 {
   "reportType": "teamsync_release_readiness",
-  "generatedAt": "2026-06-24T03:20:38.228Z",
+  "generatedAt": "2026-06-24T03:35:23.104Z",
   "project": "teamsync-platform",
   "version": "1.0.0",
   "ok": true,
@@ -47,6 +47,11 @@
       "detail": "scripts/openapi-spec.mjs"
     },
     {
+      "name": "required file scripts/dependency-sbom.mjs",
+      "ok": true,
+      "detail": "scripts/dependency-sbom.mjs"
+    },
+    {
       "name": "required file scripts/runtime-boundary.mjs",
       "ok": true,
       "detail": "scripts/runtime-boundary.mjs"
@@ -87,6 +92,11 @@
       "detail": "node scripts/openapi-spec.mjs"
     },
     {
+      "name": "dependency SBOM script present",
+      "ok": true,
+      "detail": "node scripts/dependency-sbom.mjs"
+    },
+    {
       "name": "runtime boundary script present",
       "ok": true,
       "detail": "node scripts/runtime-boundary.mjs"
@@ -114,7 +124,7 @@
     {
       "name": "git status readable",
       "ok": true,
-      "detail": "dirty_count=8"
+      "detail": "dirty_count=6"
     },
     {
       "name": "api surface command",
@@ -125,6 +135,11 @@
       "name": "openapi command",
       "ok": true,
       "detail": "npm run api:openapi exit=0"
+    },
+    {
+      "name": "dependency SBOM command",
+      "ok": true,
+      "detail": "npm run deps:sbom exit=0"
     },
     {
       "name": "runtime boundary command",
@@ -156,6 +171,12 @@
       "output": "> teamsync-platform@1.0.0 api:openapi\n> node scripts/openapi-spec.mjs\n\n{\n  \"ok\": true,\n  \"json\": \"C:\\\\Users\\\\123\\\\Documents\\\\Codex\\\\2026-06-18\\\\new-chat-5\\\\work\\\\GravityblueX-First-Identify\\\\reports\\\\openapi.json\",\n  \"markdown\": \"C:\\\\Users\\\\123\\\\Documents\\\\Codex\\\\2026-06-18\\\\new-chat-5\\\\work\\\\GravityblueX-First-Identify\\\\reports\\\\openapi.md\"\n}"
     },
     {
+      "name": "dependency SBOM command",
+      "command": "npm run deps:sbom",
+      "exitCode": 0,
+      "output": "> teamsync-platform@1.0.0 deps:sbom\n> node scripts/dependency-sbom.mjs\n\n{\n  \"ok\": true,\n  \"json\": \"C:\\\\Users\\\\123\\\\Documents\\\\Codex\\\\2026-06-18\\\\new-chat-5\\\\work\\\\GravityblueX-First-Identify\\\\reports\\\\bom.cdx.json\",\n  \"markdown\": \"C:\\\\Users\\\\123\\\\Documents\\\\Codex\\\\2026-06-18\\\\new-chat-5\\\\work\\\\GravityblueX-First-Identify\\\\reports\\\\dependency-sbom.md\"\n}"
+    },
+    {
       "name": "runtime boundary command",
       "command": "npm run runtime:boundary",
       "exitCode": 0,
@@ -165,18 +186,19 @@
       "name": "build command",
       "command": "npm run build",
       "exitCode": 0,
-      "output": "ld: \nteamsync-server:build: \nteamsync-server:build: > teamsync-server@1.0.0 build\nteamsync-server:build: > tsc\nteamsync-server:build: \nteamsync-client:build: cache hit, replaying logs 265184cf46acdae8\nteamsync-client:build: \nteamsync-client:build: > teamsync-client@0.1.0 build\nteamsync-client:build: > next build\nteamsync-client:build: \nteamsync-client:build:   ▲ Next.js 14.2.35\nteamsync-client:build: \nteamsync-client:build:    Creating an optimized production build ...\nteamsync-client:build:  ✓ Compiled successfully\nteamsync-client:build:    Linting and checking validity of types ...\nteamsync-client:build: \nteamsync-client:build: ./src/components/dashboard/Analytics.tsx\nteamsync-client:build: 245:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element\nteamsync-client:build: \nteamsync-client:build: ./src/components/dashboard/ProjectList.tsx\nteamsync-client:build: 140:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element\nteamsync-client:build: \nteamsync-client:build: ./src/components/dashboard/TaskCard.tsx\nteamsync-client:build: 38:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element\nteamsync-client:build: \nteamsync-client:build: ./src/components/layout/MobileNavigation.tsx\nteamsync-client:build: 59:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element\nteamsync-client:build: 113:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element\nteamsync-client:build: \nteamsync-client:build: info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules\nteamsync-client:build:    Collecting page data ...\nteamsync-client:build:    Generating static pages (0/4) ...\nteamsync-client:build:    Generating static pages (1/4) \r\nteamsync-client:build:    Generating static pages (2/4) \r\nteamsync-client:build:    Generating static pages (3/4) \r\nteamsync-client:build:  ✓ Generating static pages (4/4)\nteamsync-client:build:    Finalizing page optimization ...\nteamsync-client:build:    Collecting build traces ...\nteamsync-client:build: \nteamsync-client:build: Route (app)                              Size     First Load JS\nteamsync-client:build: ┌ ○ /                                    226 kB          319 kB\nteamsync-client:build: └ ○ /_not-found                          877 B          88.4 kB\nteamsync-client:build: + First Load JS shared by all            87.6 kB\nteamsync-client:build:   ├ chunks/364-84f51ea995e5c60c.js       31.9 kB\nteamsync-client:build:   ├ chunks/618f8807-eecf0bacc33acc7e.js  53.6 kB\nteamsync-client:build:   └ other shared chunks (total)          2.01 kB\nteamsync-client:build: \nteamsync-client:build: \nteamsync-client:build: ○  (Static)  prerendered as static content\nteamsync-client:build: \n\n Tasks:    3 successful, 3 total\nCached:    3 cached, 3 total\n  Time:    83ms >>> FULL TURBO\n\n\n• turbo 2.9.18"
+      "output": "ld: \nteamsync-server:build: \nteamsync-server:build: > teamsync-server@1.0.0 build\nteamsync-server:build: > tsc\nteamsync-server:build: \nteamsync-client:build: cache hit, replaying logs 265184cf46acdae8\nteamsync-client:build: \nteamsync-client:build: > teamsync-client@0.1.0 build\nteamsync-client:build: > next build\nteamsync-client:build: \nteamsync-client:build:   ▲ Next.js 14.2.35\nteamsync-client:build: \nteamsync-client:build:    Creating an optimized production build ...\nteamsync-client:build:  ✓ Compiled successfully\nteamsync-client:build:    Linting and checking validity of types ...\nteamsync-client:build: \nteamsync-client:build: ./src/components/dashboard/Analytics.tsx\nteamsync-client:build: 245:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element\nteamsync-client:build: \nteamsync-client:build: ./src/components/dashboard/ProjectList.tsx\nteamsync-client:build: 140:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element\nteamsync-client:build: \nteamsync-client:build: ./src/components/dashboard/TaskCard.tsx\nteamsync-client:build: 38:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element\nteamsync-client:build: \nteamsync-client:build: ./src/components/layout/MobileNavigation.tsx\nteamsync-client:build: 59:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element\nteamsync-client:build: 113:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element\nteamsync-client:build: \nteamsync-client:build: info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules\nteamsync-client:build:    Collecting page data ...\nteamsync-client:build:    Generating static pages (0/4) ...\nteamsync-client:build:    Generating static pages (1/4) \r\nteamsync-client:build:    Generating static pages (2/4) \r\nteamsync-client:build:    Generating static pages (3/4) \r\nteamsync-client:build:  ✓ Generating static pages (4/4)\nteamsync-client:build:    Finalizing page optimization ...\nteamsync-client:build:    Collecting build traces ...\nteamsync-client:build: \nteamsync-client:build: Route (app)                              Size     First Load JS\nteamsync-client:build: ┌ ○ /                                    226 kB          319 kB\nteamsync-client:build: └ ○ /_not-found                          877 B          88.4 kB\nteamsync-client:build: + First Load JS shared by all            87.6 kB\nteamsync-client:build:   ├ chunks/364-84f51ea995e5c60c.js       31.9 kB\nteamsync-client:build:   ├ chunks/618f8807-eecf0bacc33acc7e.js  53.6 kB\nteamsync-client:build:   └ other shared chunks (total)          2.01 kB\nteamsync-client:build: \nteamsync-client:build: \nteamsync-client:build: ○  (Static)  prerendered as static content\nteamsync-client:build: \n\n Tasks:    3 successful, 3 total\nCached:    3 cached, 3 total\n  Time:    81ms >>> FULL TURBO\n\n\n• turbo 2.9.18"
     },
     {
       "name": "test command",
       "command": "npm run test",
       "exitCode": 0,
-      "output": "> teamsync-platform@1.0.0 test\n> turbo test\n\n\n   • Packages in scope: shared, teamsync-client, teamsync-server\n   • Running test in 3 packages\n   • Remote caching disabled\n\nteamsync-server:test: cache hit, replaying logs c4e0a92a02737c77\nteamsync-server:test: \nteamsync-server:test: > teamsync-server@1.0.0 pretest\nteamsync-server:test: > prisma generate\nteamsync-server:test: \nteamsync-server:test: Prisma schema loaded from prisma\\schema.prisma\nteamsync-server:test: \nteamsync-server:test: ✔ Generated Prisma Client (v5.22.0) to .\\..\\node_modules\\@prisma\\client in 169ms\nteamsync-server:test: \nteamsync-server:test: Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)\nteamsync-server:test: \nteamsync-server:test: Tip: Easily identify and fix slow SQL queries in your app. Optimize helps you enhance your visibility: https://pris.ly/--optimize\nteamsync-server:test: \nteamsync-server:test: \nteamsync-server:test: > teamsync-server@1.0.0 test\nteamsync-server:test: > jest\nteamsync-server:test: \nteamsync-server:test: PASS src/tests/projects.contract.test.ts\nteamsync-server:test: PASS src/tests/auth-middleware.contract.test.ts\nteamsync-server:test: PASS src/tests/auth.test.ts\nteamsync-server:test: \nteamsync-server:test: Test Suites: 3 passed, 3 total\nteamsync-server:test: Tests:       14 passed, 14 total\nteamsync-server:test: Snapshots:   0 total\nteamsync-server:test: Time:        6.046 s\nteamsync-server:test: Ran all test suites.\nteamsync-client:test: cache hit, replaying logs 6c80ae17cbeeb2d8\nteamsync-client:test: \nteamsync-client:test: > teamsync-client@0.1.0 test\nteamsync-client:test: > jest\nteamsync-client:test: \nteamsync-client:test: PASS src/components/ui/LoadingSpinner.test.tsx\nteamsync-client:test:   LoadingSpinner\nteamsync-client:test:     √ renders an accessible loading status (105 ms)\nteamsync-client:test: \nteamsync-client:test: Test Suites: 1 passed, 1 total\nteamsync-client:test: Tests:       1 passed, 1 total\nteamsync-client:test: Snapshots:   0 total\nteamsync-client:test: Time:        2.789 s\nteamsync-client:test: Ran all test suites.\n\n Tasks:    2 successful, 2 total\nCached:    2 cached, 2 total\n  Time:    77ms >>> FULL TURBO\n\n\n• turbo 2.9.18"
+      "output": "> teamsync-platform@1.0.0 test\n> turbo test\n\n\n   • Packages in scope: shared, teamsync-client, teamsync-server\n   • Running test in 3 packages\n   • Remote caching disabled\n\nteamsync-client:test: cache hit, replaying logs 6c80ae17cbeeb2d8\nteamsync-client:test: \nteamsync-client:test: > teamsync-client@0.1.0 test\nteamsync-client:test: > jest\nteamsync-client:test: \nteamsync-client:test: PASS src/components/ui/LoadingSpinner.test.tsx\nteamsync-client:test:   LoadingSpinner\nteamsync-client:test:     √ renders an accessible loading status (105 ms)\nteamsync-client:test: \nteamsync-client:test: Test Suites: 1 passed, 1 total\nteamsync-client:test: Tests:       1 passed, 1 total\nteamsync-client:test: Snapshots:   0 total\nteamsync-client:test: Time:        2.789 s\nteamsync-client:test: Ran all test suites.\nteamsync-server:test: cache hit, replaying logs c4e0a92a02737c77\nteamsync-server:test: \nteamsync-server:test: > teamsync-server@1.0.0 pretest\nteamsync-server:test: > prisma generate\nteamsync-server:test: \nteamsync-server:test: Prisma schema loaded from prisma\\schema.prisma\nteamsync-server:test: \nteamsync-server:test: ✔ Generated Prisma Client (v5.22.0) to .\\..\\node_modules\\@prisma\\client in 169ms\nteamsync-server:test: \nteamsync-server:test: Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)\nteamsync-server:test: \nteamsync-server:test: Tip: Easily identify and fix slow SQL queries in your app. Optimize helps you enhance your visibility: https://pris.ly/--optimize\nteamsync-server:test: \nteamsync-server:test: \nteamsync-server:test: > teamsync-server@1.0.0 test\nteamsync-server:test: > jest\nteamsync-server:test: \nteamsync-server:test: PASS src/tests/projects.contract.test.ts\nteamsync-server:test: PASS src/tests/auth-middleware.contract.test.ts\nteamsync-server:test: PASS src/tests/auth.test.ts\nteamsync-server:test: \nteamsync-server:test: Test Suites: 3 passed, 3 total\nteamsync-server:test: Tests:       14 passed, 14 total\nteamsync-server:test: Snapshots:   0 total\nteamsync-server:test: Time:        6.046 s\nteamsync-server:test: Ran all test suites.\n\n Tasks:    2 successful, 2 total\nCached:    2 cached, 2 total\n  Time:    88ms >>> FULL TURBO\n\n\n• turbo 2.9.18"
     }
   ],
   "references": [
     "OpenSSF Scorecard style repository health gates",
     "OpenAPI Specification contract generated from the route inventory",
+    "CycloneDX style dependency SBOM from package-lock files",
     "Renovate controlled dependency cadence",
     "Release readiness report before tagging",
     "Runtime boundary evidence between mounted API modules and candidate modules"

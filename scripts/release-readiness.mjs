@@ -40,7 +40,7 @@ async function buildReport() {
   const rootPackage = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
   const gates = [];
 
-  for (const file of ['README.md', 'LICENSE', 'SECURITY.md', 'renovate.json', 'package-lock.json', 'turbo.json', 'scripts/api-surface.mjs', 'scripts/openapi-spec.mjs', 'scripts/runtime-boundary.mjs']) {
+  for (const file of ['README.md', 'LICENSE', 'SECURITY.md', 'renovate.json', 'package-lock.json', 'turbo.json', 'scripts/api-surface.mjs', 'scripts/openapi-spec.mjs', 'scripts/dependency-sbom.mjs', 'scripts/runtime-boundary.mjs']) {
     gates.push(gate(`required file ${file}`, existsSync(resolve(root, file)), file));
   }
 
@@ -52,6 +52,7 @@ async function buildReport() {
   gates.push(gate('test script present', rootPackage.scripts?.test === 'turbo test', rootPackage.scripts?.test || 'missing'));
   gates.push(gate('api surface script present', rootPackage.scripts?.['api:surface'] === 'node scripts/api-surface.mjs', rootPackage.scripts?.['api:surface'] || 'missing'));
   gates.push(gate('openapi script present', rootPackage.scripts?.['api:openapi'] === 'node scripts/openapi-spec.mjs', rootPackage.scripts?.['api:openapi'] || 'missing'));
+  gates.push(gate('dependency SBOM script present', rootPackage.scripts?.['deps:sbom'] === 'node scripts/dependency-sbom.mjs', rootPackage.scripts?.['deps:sbom'] || 'missing'));
   gates.push(gate('runtime boundary script present', rootPackage.scripts?.['runtime:boundary'] === 'node scripts/runtime-boundary.mjs', rootPackage.scripts?.['runtime:boundary'] || 'missing'));
   gates.push(gate('author metadata present', rootPackage.author === 'GravityblueX', rootPackage.author || 'missing'));
   gates.push(gate('license metadata present', rootPackage.license === 'MIT', rootPackage.license || 'missing'));
@@ -67,6 +68,7 @@ async function buildReport() {
     for (const [name, command, args] of [
       ['api surface command', 'npm', ['run', 'api:surface']],
       ['openapi command', 'npm', ['run', 'api:openapi']],
+      ['dependency SBOM command', 'npm', ['run', 'deps:sbom']],
       ['runtime boundary command', 'npm', ['run', 'runtime:boundary']],
       ['build command', 'npm', ['run', 'build']],
       ['test command', 'npm', ['run', 'test']]
@@ -91,6 +93,7 @@ async function buildReport() {
     references: [
       'OpenSSF Scorecard style repository health gates',
       'OpenAPI Specification contract generated from the route inventory',
+      'CycloneDX style dependency SBOM from package-lock files',
       'Renovate controlled dependency cadence',
       'Release readiness report before tagging',
       'Runtime boundary evidence between mounted API modules and candidate modules'
