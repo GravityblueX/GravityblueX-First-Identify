@@ -1,0 +1,521 @@
+{
+  "reportType": "teamsync_client_api_coverage",
+  "generatedAt": "2026-06-24T03:59:53.555Z",
+  "ok": true,
+  "summary": {
+    "clientCallCount": 25,
+    "matchedCallCount": 25,
+    "unmatchedCallCount": 0,
+    "backendOperationCount": 27
+  },
+  "gates": [
+    {
+      "name": "OpenAPI contract available",
+      "ok": true,
+      "detail": "3.1.0"
+    },
+    {
+      "name": "client API calls discovered",
+      "ok": true,
+      "detail": "25 call(s)"
+    },
+    {
+      "name": "all client calls match OpenAPI",
+      "ok": true,
+      "detail": "0 unmatched"
+    },
+    {
+      "name": "analytics direct fetches covered",
+      "ok": true,
+      "detail": "client/src/components/dashboard/Analytics.tsx"
+    },
+    {
+      "name": "auth flow covered",
+      "ok": true,
+      "detail": "POST /api/auth/login"
+    }
+  ],
+  "calls": [
+    {
+      "method": "GET",
+      "path": "/api/analytics/dashboard/{param}",
+      "raw": "/api/analytics/dashboard/${selectedProject}?timeRange=${timeRange}",
+      "file": "client\\src\\components\\dashboard\\Analytics.tsx",
+      "line": 47,
+      "source": "fetch",
+      "occurrences": [
+        {
+          "file": "client\\src\\components\\dashboard\\Analytics.tsx",
+          "line": 47,
+          "source": "fetch",
+          "raw": "/api/analytics/dashboard/${selectedProject}?timeRange=${timeRange}"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/analytics/dashboard/{projectId}",
+      "operationId": "getApiAnalyticsDashboardByProjectId"
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/project-insights/{param}",
+      "raw": "/api/analytics/project-insights/${selectedProject}",
+      "file": "client\\src\\components\\dashboard\\Analytics.tsx",
+      "line": 54,
+      "source": "fetch",
+      "occurrences": [
+        {
+          "file": "client\\src\\components\\dashboard\\Analytics.tsx",
+          "line": 54,
+          "source": "fetch",
+          "raw": "/api/analytics/project-insights/${selectedProject}"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/analytics/project-insights/{projectId}",
+      "operationId": "getApiAnalyticsProjectInsightsByProjectId"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "raw": "/api/auth/login",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 60,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 60,
+          "source": "apiClient",
+          "raw": "/api/auth/login"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/auth/login",
+      "operationId": "postApiAuthLogin"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "raw": "/api/auth/refresh",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 72,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 72,
+          "source": "apiClient",
+          "raw": "/api/auth/refresh"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/auth/refresh",
+      "operationId": "postApiAuthRefresh"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "raw": "/api/auth/register",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 69,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 69,
+          "source": "apiClient",
+          "raw": "/api/auth/register"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/auth/register",
+      "operationId": "postApiAuthRegister"
+    },
+    {
+      "method": "GET",
+      "path": "/api/chats/{param}/messages",
+      "raw": "/api/chats/${chatId}/messages?page=${page}&limit=${limit}",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 151,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 151,
+          "source": "apiClient",
+          "raw": "/api/chats/${chatId}/messages?page=${page}&limit=${limit}"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/chats/{id}/messages",
+      "operationId": "getApiChatsByIdMessages"
+    },
+    {
+      "method": "POST",
+      "path": "/api/chats/{param}/messages",
+      "raw": "/api/chats/${chatId}/messages",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 156,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 156,
+          "source": "apiClient",
+          "raw": "/api/chats/${chatId}/messages"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/chats/{id}/messages",
+      "operationId": "postApiChatsByIdMessages"
+    },
+    {
+      "method": "GET",
+      "path": "/api/chats/project/{param}",
+      "raw": "/api/chats/project/${projectId}",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 148,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 148,
+          "source": "apiClient",
+          "raw": "/api/chats/project/${projectId}"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/chats/project/{projectId}",
+      "operationId": "getApiChatsProjectByProjectId"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects",
+      "raw": "/api/projects",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 76,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 76,
+          "source": "apiClient",
+          "raw": "/api/projects"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/projects",
+      "operationId": "getApiProjects"
+    },
+    {
+      "method": "POST",
+      "path": "/api/projects",
+      "raw": "/api/projects",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 86,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 86,
+          "source": "apiClient",
+          "raw": "/api/projects"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/projects",
+      "operationId": "postApiProjects"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/projects/{param}",
+      "raw": "/api/projects/${id}",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 91,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 91,
+          "source": "apiClient",
+          "raw": "/api/projects/${id}"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/projects/{id}",
+      "operationId": "deleteApiProjectsById"
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects/{param}",
+      "raw": "/api/projects/${id}",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 78,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 78,
+          "source": "apiClient",
+          "raw": "/api/projects/${id}"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/projects/{id}",
+      "operationId": "getApiProjectsById"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/projects/{param}",
+      "raw": "/api/projects/${id}",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 89,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 89,
+          "source": "apiClient",
+          "raw": "/api/projects/${id}"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/projects/{id}",
+      "operationId": "putApiProjectsById"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks",
+      "raw": "/api/tasks",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 115,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 115,
+          "source": "apiClient",
+          "raw": "/api/tasks"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/tasks",
+      "operationId": "postApiTasks"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/tasks/{param}",
+      "raw": "/api/tasks/${id}",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 120,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 120,
+          "source": "apiClient",
+          "raw": "/api/tasks/${id}"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/tasks/{id}",
+      "operationId": "deleteApiTasksById"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/{param}",
+      "raw": "/api/tasks/${id}",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 106,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 106,
+          "source": "apiClient",
+          "raw": "/api/tasks/${id}"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/tasks/{id}",
+      "operationId": "getApiTasksById"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/tasks/{param}",
+      "raw": "/api/tasks/${id}",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 118,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 118,
+          "source": "apiClient",
+          "raw": "/api/tasks/${id}"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/tasks/{id}",
+      "operationId": "putApiTasksById"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tasks/{param}/comments",
+      "raw": "/api/tasks/${taskId}/comments",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 123,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 123,
+          "source": "apiClient",
+          "raw": "/api/tasks/${taskId}/comments"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/tasks/{id}/comments",
+      "operationId": "postApiTasksByIdComments"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tasks/project/{param}",
+      "raw": "/api/tasks/project/${projectId}?${params.toString()}",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 103,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 103,
+          "source": "apiClient",
+          "raw": "/api/tasks/project/${projectId}?${params.toString()}"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/tasks/project/{projectId}",
+      "operationId": "getApiTasksProjectByProjectId"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/me",
+      "raw": "/api/users/me",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 127,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 127,
+          "source": "apiClient",
+          "raw": "/api/users/me"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/users/me",
+      "operationId": "getApiUsersMe"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/users/me",
+      "raw": "/api/users/me",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 133,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 133,
+          "source": "apiClient",
+          "raw": "/api/users/me"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/users/me",
+      "operationId": "putApiUsersMe"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/notifications",
+      "raw": "/api/users/notifications",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 137,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 137,
+          "source": "apiClient",
+          "raw": "/api/users/notifications"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/users/notifications",
+      "operationId": "getApiUsersNotifications"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/users/notifications/{param}/read",
+      "raw": "/api/users/notifications/${id}/read",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 140,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 140,
+          "source": "apiClient",
+          "raw": "/api/users/notifications/${id}/read"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/users/notifications/{id}/read",
+      "operationId": "putApiUsersNotificationsByIdRead"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/users/notifications/read-all",
+      "raw": "/api/users/notifications/read-all",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 143,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 143,
+          "source": "apiClient",
+          "raw": "/api/users/notifications/read-all"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/users/notifications/read-all",
+      "operationId": "putApiUsersNotificationsReadAll"
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/search",
+      "raw": "/api/users/search?q=${encodeURIComponent(query)}",
+      "file": "client\\src\\lib\\api.ts",
+      "line": 135,
+      "source": "apiClient",
+      "occurrences": [
+        {
+          "file": "client\\src\\lib\\api.ts",
+          "line": 135,
+          "source": "apiClient",
+          "raw": "/api/users/search?q=${encodeURIComponent(query)}"
+        }
+      ],
+      "matched": true,
+      "matchedPath": "/api/users/search",
+      "operationId": "getApiUsersSearch"
+    }
+  ],
+  "unmatched": [],
+  "referenceBasis": [
+    "OpenAPI Specification as the backend contract",
+    "Static frontend call inventory for path drift detection",
+    "Coverage is scoped to frontend calls, not full backend feature coverage"
+  ]
+}

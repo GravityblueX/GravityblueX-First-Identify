@@ -4,7 +4,7 @@
   "serialNumber": "urn:uuid:teamsync-local-sbom",
   "version": 1,
   "metadata": {
-    "timestamp": "2026-06-24T03:35:21.175Z",
+    "timestamp": "2026-06-24T03:59:54.093Z",
     "component": {
       "type": "application",
       "name": "teamsync-platform",

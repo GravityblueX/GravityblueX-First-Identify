@@ -1,6 +1,6 @@
 # TeamSync Release Readiness
 
-Generated: 2026-06-24T03:35:23.104Z
+Generated: 2026-06-24T03:59:56.104Z
 Project: `teamsync-platform`
 Version: `1.0.0`
 Status: `OK`
@@ -18,6 +18,7 @@ Executed build/test: `true`
 | required file turbo.json | OK | turbo.json |
 | required file scripts/api-surface.mjs | OK | scripts/api-surface.mjs |
 | required file scripts/openapi-spec.mjs | OK | scripts/openapi-spec.mjs |
+| required file scripts/client-api-coverage.mjs | OK | scripts/client-api-coverage.mjs |
 | required file scripts/dependency-sbom.mjs | OK | scripts/dependency-sbom.mjs |
 | required file scripts/runtime-boundary.mjs | OK | scripts/runtime-boundary.mjs |
 | workspace package client | OK | client |
@@ -27,15 +28,17 @@ Executed build/test: `true`
 | test script present | OK | turbo test |
 | api surface script present | OK | node scripts/api-surface.mjs |
 | openapi script present | OK | node scripts/openapi-spec.mjs |
+| client API coverage script present | OK | node scripts/client-api-coverage.mjs |
 | dependency SBOM script present | OK | node scripts/dependency-sbom.mjs |
 | runtime boundary script present | OK | node scripts/runtime-boundary.mjs |
 | author metadata present | OK | GravityblueX |
 | license metadata present | OK | MIT |
 | security boundary documented | OK | SECURITY.md |
 | README maintenance boundary documented | OK | README.md |
-| git status readable | OK | dirty_count=6 |
+| git status readable | OK | dirty_count=5 |
 | api surface command | OK | npm run api:surface exit=0 |
 | openapi command | OK | npm run api:openapi exit=0 |
+| client API coverage command | OK | npm run api:client-coverage exit=0 |
 | dependency SBOM command | OK | npm run deps:sbom exit=0 |
 | runtime boundary command | OK | npm run runtime:boundary exit=0 |
 | build command | OK | npm run build exit=0 |
@@ -45,6 +48,7 @@ Executed build/test: `true`
 
 - api surface command: `npm run api:surface` exit `0`
 - openapi command: `npm run api:openapi` exit `0`
+- client API coverage command: `npm run api:client-coverage` exit `0`
 - dependency SBOM command: `npm run deps:sbom` exit `0`
 - runtime boundary command: `npm run runtime:boundary` exit `0`
 - build command: `npm run build` exit `0`
@@ -54,6 +58,7 @@ Executed build/test: `true`
 
 - OpenSSF Scorecard style repository health gates
 - OpenAPI Specification contract generated from the route inventory
+- Client API coverage checks frontend calls against generated OpenAPI paths
 - CycloneDX style dependency SBOM from package-lock files
 - Renovate controlled dependency cadence
 - Release readiness report before tagging

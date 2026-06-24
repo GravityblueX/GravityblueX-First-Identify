@@ -16,6 +16,7 @@
     "lint": "turbo lint",
     "api:surface": "node scripts/api-surface.mjs",
     "api:openapi": "node scripts/openapi-spec.mjs",
+    "api:client-coverage": "node scripts/client-api-coverage.mjs",
     "deps:sbom": "node scripts/dependency-sbom.mjs",
     "runtime:boundary": "node scripts/runtime-boundary.mjs",
     "release:readiness": "node scripts/release-readiness.mjs",
