@@ -14,6 +14,7 @@
     "build": "turbo build",
     "test": "turbo test",
     "lint": "turbo lint",
+    "runtime:boundary": "node scripts/runtime-boundary.mjs",
     "release:readiness": "node scripts/release-readiness.mjs",
     "release:readiness:checked": "node scripts/release-readiness.mjs --run-checks",
     "db:push": "cd server && npm run db:push",

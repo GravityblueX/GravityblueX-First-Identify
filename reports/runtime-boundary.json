@@ -1,0 +1,238 @@
+{
+  "reportType": "teamsync_runtime_boundary",
+  "generatedAt": "2026-06-24T02:16:14.112Z",
+  "entry": "server/src/index.ts",
+  "ok": true,
+  "gates": [
+    {
+      "name": "server entry exists",
+      "ok": true,
+      "detail": "server/src/index.ts"
+    },
+    {
+      "name": "tsconfig compiles from entry",
+      "ok": true,
+      "detail": "[\"src/index.ts\"]"
+    },
+    {
+      "name": "core API routes mounted",
+      "ok": true,
+      "detail": "/api/auth, /api/users, /api/projects, /api/tasks, /api/chats, /api/analytics"
+    },
+    {
+      "name": "auth and error middleware imported",
+      "ok": true,
+      "detail": "server/src/index.ts"
+    },
+    {
+      "name": "socket runtime wired",
+      "ok": true,
+      "detail": "server/src/index.ts"
+    },
+    {
+      "name": "runtime graph has enough modules",
+      "ok": true,
+      "detail": "10 modules"
+    }
+  ],
+  "summary": {
+    "serverSourceFiles": 33,
+    "runtimeModules": 10,
+    "candidateModules": 23,
+    "runtimeEdges": 14
+  },
+  "routeMounts": [
+    "/api/auth",
+    "/api/users",
+    "/api/projects",
+    "/api/tasks",
+    "/api/chats",
+    "/api/analytics"
+  ],
+  "runtimeAreas": [
+    {
+      "area": "(root)",
+      "count": 1
+    },
+    {
+      "area": "middleware",
+      "count": 2
+    },
+    {
+      "area": "routes",
+      "count": 6
+    },
+    {
+      "area": "socket",
+      "count": 1
+    }
+  ],
+  "candidateAreas": [
+    {
+      "area": "analytics",
+      "count": 2
+    },
+    {
+      "area": "backup",
+      "count": 1
+    },
+    {
+      "area": "compliance",
+      "count": 1
+    },
+    {
+      "area": "events",
+      "count": 1
+    },
+    {
+      "area": "graphql",
+      "count": 3
+    },
+    {
+      "area": "integrations",
+      "count": 1
+    },
+    {
+      "area": "middleware",
+      "count": 1
+    },
+    {
+      "area": "ml",
+      "count": 1
+    },
+    {
+      "area": "monitoring",
+      "count": 1
+    },
+    {
+      "area": "performance",
+      "count": 1
+    },
+    {
+      "area": "routes",
+      "count": 3
+    },
+    {
+      "area": "security",
+      "count": 1
+    },
+    {
+      "area": "services",
+      "count": 6
+    }
+  ],
+  "runtimeModules": [
+    "server/src/index.ts",
+    "server/src/middleware/auth.ts",
+    "server/src/middleware/errorHandler.ts",
+    "server/src/routes/analytics.ts",
+    "server/src/routes/auth.ts",
+    "server/src/routes/chats.ts",
+    "server/src/routes/projects.ts",
+    "server/src/routes/tasks.ts",
+    "server/src/routes/users.ts",
+    "server/src/socket/socketHandler.ts"
+  ],
+  "candidateModules": [
+    "server/src/analytics/advancedAnalyticsService.ts",
+    "server/src/analytics/reportingEngine.ts",
+    "server/src/backup/backupService.ts",
+    "server/src/compliance/gdprService.ts",
+    "server/src/events/eventStore.ts",
+    "server/src/graphql/pubsub.ts",
+    "server/src/graphql/resolvers.ts",
+    "server/src/graphql/schema.ts",
+    "server/src/integrations/slackIntegration.ts",
+    "server/src/middleware/security.ts",
+    "server/src/ml/taskPredictionModel.ts",
+    "server/src/monitoring/healthcheckService.ts",
+    "server/src/performance/performanceOptimizer.ts",
+    "server/src/routes/export.ts",
+    "server/src/routes/files.ts",
+    "server/src/routes/search.ts",
+    "server/src/security/securityService.ts",
+    "server/src/services/aiService.ts",
+    "server/src/services/cacheService.ts",
+    "server/src/services/eventBus.ts",
+    "server/src/services/fileService.ts",
+    "server/src/services/monitoringService.ts",
+    "server/src/services/observabilityService.ts"
+  ],
+  "edges": [
+    {
+      "from": "server/src/index.ts",
+      "to": "server/src/routes/auth.ts",
+      "specifier": "./routes/auth"
+    },
+    {
+      "from": "server/src/index.ts",
+      "to": "server/src/routes/projects.ts",
+      "specifier": "./routes/projects"
+    },
+    {
+      "from": "server/src/index.ts",
+      "to": "server/src/routes/tasks.ts",
+      "specifier": "./routes/tasks"
+    },
+    {
+      "from": "server/src/index.ts",
+      "to": "server/src/routes/users.ts",
+      "specifier": "./routes/users"
+    },
+    {
+      "from": "server/src/index.ts",
+      "to": "server/src/routes/chats.ts",
+      "specifier": "./routes/chats"
+    },
+    {
+      "from": "server/src/index.ts",
+      "to": "server/src/routes/analytics.ts",
+      "specifier": "./routes/analytics"
+    },
+    {
+      "from": "server/src/index.ts",
+      "to": "server/src/middleware/auth.ts",
+      "specifier": "./middleware/auth"
+    },
+    {
+      "from": "server/src/index.ts",
+      "to": "server/src/socket/socketHandler.ts",
+      "specifier": "./socket/socketHandler"
+    },
+    {
+      "from": "server/src/index.ts",
+      "to": "server/src/middleware/errorHandler.ts",
+      "specifier": "./middleware/errorHandler"
+    },
+    {
+      "from": "server/src/routes/projects.ts",
+      "to": "server/src/middleware/auth.ts",
+      "specifier": "../middleware/auth"
+    },
+    {
+      "from": "server/src/routes/tasks.ts",
+      "to": "server/src/middleware/auth.ts",
+      "specifier": "../middleware/auth"
+    },
+    {
+      "from": "server/src/routes/users.ts",
+      "to": "server/src/middleware/auth.ts",
+      "specifier": "../middleware/auth"
+    },
+    {
+      "from": "server/src/routes/chats.ts",
+      "to": "server/src/middleware/auth.ts",
+      "specifier": "../middleware/auth"
+    },
+    {
+      "from": "server/src/routes/analytics.ts",
+      "to": "server/src/middleware/auth.ts",
+      "specifier": "../middleware/auth"
+    }
+  ],
+  "notes": [
+    "This report follows static local imports from server/src/index.ts.",
+    "Candidate modules are present in source but not reached from the current server entry graph.",
+    "A module should move from candidate to runtime only when it is mounted, tested, and documented."
+  ]
+}

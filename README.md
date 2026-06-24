@@ -55,11 +55,13 @@ teamsync-platform/
 ```bash
 npm run build
 npm run test
+npm run runtime:boundary
 npm run release:readiness:checked
 ```
 
 安全与维护边界见 [SECURITY.md](./SECURITY.md)。
 发布就绪证据会写入 `reports/release-readiness.md` 和 `reports/release-readiness.json`。
+运行时边界证据会写入 `reports/runtime-boundary.md` 和 `reports/runtime-boundary.json`，用于区分已经从 `server/src/index.ts` 接入的后端模块与仍处于候选状态的源码。
 
 ## 🎯 简历价值点
 
