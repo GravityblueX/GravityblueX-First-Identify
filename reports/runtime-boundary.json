@@ -1,6 +1,6 @@
 {
   "reportType": "teamsync_runtime_boundary",
-  "generatedAt": "2026-06-24T02:32:47.511Z",
+  "generatedAt": "2026-06-24T02:44:29.685Z",
   "entry": "server/src/index.ts",
   "ok": true,
   "gates": [
