@@ -1,6 +1,6 @@
 # TeamSync API Surface
 
-Generated: 2026-06-24T02:55:41.613Z
+Generated: 2026-06-24T03:20:36.215Z
 Status: `OK`
 Routes: `27`
 Public: `4`

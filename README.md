@@ -56,6 +56,7 @@ teamsync-platform/
 npm run build
 npm run test
 npm run api:surface
+npm run api:openapi
 npm run runtime:boundary
 npm run release:readiness:checked
 ```
@@ -63,6 +64,7 @@ npm run release:readiness:checked
 安全与维护边界见 [SECURITY.md](./SECURITY.md)。
 发布就绪证据会写入 `reports/release-readiness.md` 和 `reports/release-readiness.json`。
 API surface 证据会写入 `reports/api-surface.md` 和 `reports/api-surface.json`，用于确认公开与受保护接口边界。
+OpenAPI 合同会写入 `reports/openapi.md` 和 `reports/openapi.json`，用于把 Express 路由、路径参数和 JWT Bearer 鉴权边界转换成可审阅的 OpenAPI 3.1 文档。
 运行时边界证据会写入 `reports/runtime-boundary.md` 和 `reports/runtime-boundary.json`，用于区分已经从 `server/src/index.ts` 接入的后端模块与仍处于候选状态的源码。
 
 ## 🎯 简历价值点

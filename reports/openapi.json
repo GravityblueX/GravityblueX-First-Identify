@@ -1,0 +1,1156 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TeamSync API",
+    "version": "1.0.0",
+    "description": "Generated API contract from the Express route surface inventory."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Local development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "paths": {
+    "/api/analytics/dashboard/{projectId}": {
+      "get": {
+        "operationId": "getApiAnalyticsDashboardByProjectId",
+        "summary": "GET /api/analytics/dashboard/:projectId",
+        "tags": [
+          "api/analytics"
+        ],
+        "description": "Discovered from server/src/routes/analytics.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/analytics.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/analytics/project-insights/{projectId}": {
+      "get": {
+        "operationId": "getApiAnalyticsProjectInsightsByProjectId",
+        "summary": "GET /api/analytics/project-insights/:projectId",
+        "tags": [
+          "api/analytics"
+        ],
+        "description": "Discovered from server/src/routes/analytics.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/analytics.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/analytics/team-performance": {
+      "get": {
+        "operationId": "getApiAnalyticsTeamPerformance",
+        "summary": "GET /api/analytics/team-performance",
+        "tags": [
+          "api/analytics"
+        ],
+        "description": "Discovered from server/src/routes/analytics.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/analytics.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "postApiAuthLogin",
+        "summary": "POST /api/auth/login",
+        "tags": [
+          "api/auth"
+        ],
+        "description": "Discovered from server/src/routes/auth.ts. Auth boundary: public endpoint.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "x-source-file": "server/src/routes/auth.ts",
+        "x-auth-boundary": "public"
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "postApiAuthRefresh",
+        "summary": "POST /api/auth/refresh",
+        "tags": [
+          "api/auth"
+        ],
+        "description": "Discovered from server/src/routes/auth.ts. Auth boundary: public endpoint.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "x-source-file": "server/src/routes/auth.ts",
+        "x-auth-boundary": "public"
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "operationId": "postApiAuthRegister",
+        "summary": "POST /api/auth/register",
+        "tags": [
+          "api/auth"
+        ],
+        "description": "Discovered from server/src/routes/auth.ts. Auth boundary: public endpoint.",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "x-source-file": "server/src/routes/auth.ts",
+        "x-auth-boundary": "public"
+      }
+    },
+    "/api/chats/{id}/messages": {
+      "get": {
+        "operationId": "getApiChatsByIdMessages",
+        "summary": "GET /api/chats/:id/messages",
+        "tags": [
+          "api/chats"
+        ],
+        "description": "Discovered from server/src/routes/chats.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/chats.ts",
+        "x-auth-boundary": "protected"
+      },
+      "post": {
+        "operationId": "postApiChatsByIdMessages",
+        "summary": "POST /api/chats/:id/messages",
+        "tags": [
+          "api/chats"
+        ],
+        "description": "Discovered from server/src/routes/chats.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/chats.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/chats/project/{projectId}": {
+      "get": {
+        "operationId": "getApiChatsProjectByProjectId",
+        "summary": "GET /api/chats/project/:projectId",
+        "tags": [
+          "api/chats"
+        ],
+        "description": "Discovered from server/src/routes/chats.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/chats.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/projects": {
+      "get": {
+        "operationId": "getApiProjects",
+        "summary": "GET /api/projects",
+        "tags": [
+          "api/projects"
+        ],
+        "description": "Discovered from server/src/routes/projects.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/projects.ts",
+        "x-auth-boundary": "protected"
+      },
+      "post": {
+        "operationId": "postApiProjects",
+        "summary": "POST /api/projects",
+        "tags": [
+          "api/projects"
+        ],
+        "description": "Discovered from server/src/routes/projects.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/projects.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/projects/{id}": {
+      "delete": {
+        "operationId": "deleteApiProjectsById",
+        "summary": "DELETE /api/projects/:id",
+        "tags": [
+          "api/projects"
+        ],
+        "description": "Discovered from server/src/routes/projects.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/projects.ts",
+        "x-auth-boundary": "protected"
+      },
+      "get": {
+        "operationId": "getApiProjectsById",
+        "summary": "GET /api/projects/:id",
+        "tags": [
+          "api/projects"
+        ],
+        "description": "Discovered from server/src/routes/projects.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/projects.ts",
+        "x-auth-boundary": "protected"
+      },
+      "put": {
+        "operationId": "putApiProjectsById",
+        "summary": "PUT /api/projects/:id",
+        "tags": [
+          "api/projects"
+        ],
+        "description": "Discovered from server/src/routes/projects.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/projects.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/tasks": {
+      "post": {
+        "operationId": "postApiTasks",
+        "summary": "POST /api/tasks",
+        "tags": [
+          "api/tasks"
+        ],
+        "description": "Discovered from server/src/routes/tasks.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/tasks.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/tasks/{id}": {
+      "delete": {
+        "operationId": "deleteApiTasksById",
+        "summary": "DELETE /api/tasks/:id",
+        "tags": [
+          "api/tasks"
+        ],
+        "description": "Discovered from server/src/routes/tasks.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/tasks.ts",
+        "x-auth-boundary": "protected"
+      },
+      "get": {
+        "operationId": "getApiTasksById",
+        "summary": "GET /api/tasks/:id",
+        "tags": [
+          "api/tasks"
+        ],
+        "description": "Discovered from server/src/routes/tasks.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/tasks.ts",
+        "x-auth-boundary": "protected"
+      },
+      "put": {
+        "operationId": "putApiTasksById",
+        "summary": "PUT /api/tasks/:id",
+        "tags": [
+          "api/tasks"
+        ],
+        "description": "Discovered from server/src/routes/tasks.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/tasks.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/tasks/{id}/comments": {
+      "post": {
+        "operationId": "postApiTasksByIdComments",
+        "summary": "POST /api/tasks/:id/comments",
+        "tags": [
+          "api/tasks"
+        ],
+        "description": "Discovered from server/src/routes/tasks.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/tasks.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/tasks/project/{projectId}": {
+      "get": {
+        "operationId": "getApiTasksProjectByProjectId",
+        "summary": "GET /api/tasks/project/:projectId",
+        "tags": [
+          "api/tasks"
+        ],
+        "description": "Discovered from server/src/routes/tasks.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/tasks.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/users/me": {
+      "get": {
+        "operationId": "getApiUsersMe",
+        "summary": "GET /api/users/me",
+        "tags": [
+          "api/users"
+        ],
+        "description": "Discovered from server/src/routes/users.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/users.ts",
+        "x-auth-boundary": "protected"
+      },
+      "put": {
+        "operationId": "putApiUsersMe",
+        "summary": "PUT /api/users/me",
+        "tags": [
+          "api/users"
+        ],
+        "description": "Discovered from server/src/routes/users.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/users.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/users/notifications": {
+      "get": {
+        "operationId": "getApiUsersNotifications",
+        "summary": "GET /api/users/notifications",
+        "tags": [
+          "api/users"
+        ],
+        "description": "Discovered from server/src/routes/users.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/users.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/users/notifications/{id}/read": {
+      "put": {
+        "operationId": "putApiUsersNotificationsByIdRead",
+        "summary": "PUT /api/users/notifications/:id/read",
+        "tags": [
+          "api/users"
+        ],
+        "description": "Discovered from server/src/routes/users.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/users.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/users/notifications/read-all": {
+      "put": {
+        "operationId": "putApiUsersNotificationsReadAll",
+        "summary": "PUT /api/users/notifications/read-all",
+        "tags": [
+          "api/users"
+        ],
+        "description": "Discovered from server/src/routes/users.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/users.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/api/users/search": {
+      "get": {
+        "operationId": "getApiUsersSearch",
+        "summary": "GET /api/users/search",
+        "tags": [
+          "api/users"
+        ],
+        "description": "Discovered from server/src/routes/users.ts. Auth boundary: JWT bearer token required.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token"
+          }
+        },
+        "x-source-file": "server/src/routes/users.ts",
+        "x-auth-boundary": "protected"
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "GET /health",
+        "tags": [
+          "health"
+        ],
+        "description": "Discovered from server/src/index.ts. Auth boundary: public endpoint.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "x-source-file": "server/src/index.ts",
+        "x-auth-boundary": "public"
+      }
+    }
+  },
+  "x-generated-from": "reports/api-surface.json"
+}
